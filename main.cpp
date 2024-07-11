@@ -19,17 +19,18 @@ const float MOVESPEED = WIDTH/MAXFPS;
 void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile();
 float roundToX(float num, float roundto);
 sf::RectangleShape getCursorShape();
+
 sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
 
 sf::Event event;
-int activeobj = PLAYER;
+int activeobj = FLOOR;
 
 vector<sf::RectangleShape> objects;
 vector<sf::Vector2f> actualpos;
 sf::Vector2f screenpos(0, 0);
 
-
-float xsnap = 50, ysnap = 30;
+bool rotatefloors = false;
+float xsnap = 30, ysnap = 30;
 
 int main(){
     while(window.isOpen()){
@@ -43,7 +44,7 @@ int main(){
 }
 
 void inputevents(sf::Event *event){
-    static bool mouseDownLastFrame = false;
+    static bool mouseDownLastFrame = false, rotatelastframe = false;
     while(window.pollEvent(*event)){
         if(event->type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
             window.close();
@@ -55,6 +56,13 @@ void inputevents(sf::Event *event){
         if(mouseDownLastFrame && !sf::Mouse::isButtonPressed(sf::Mouse::Left)){
             mouseDownLastFrame = false;
             placeObject();
+        }
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::R)){
+            rotatelastframe = true;
+        }
+        if(rotatelastframe && !sf::Keyboard::isKeyPressed(sf::Keyboard::R)){
+            rotatelastframe = false;
+            rotatefloors = !rotatefloors;
         }
     }
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
@@ -80,6 +88,10 @@ sf::RectangleShape getCursorShape(){
     sf::RectangleShape rectbuffer;
     switch(activeobj){
         case FLOOR:
+            if(rotatefloors){
+                rectbuffer.setSize(sf::Vector2f(30, 300));
+                break;
+            }
             rectbuffer.setSize(sf::Vector2f(300, 30));
             break;
         case PLAYER:
