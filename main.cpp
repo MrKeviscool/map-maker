@@ -30,6 +30,7 @@ vector<sf::Vector2f> actualpos;
 sf::Vector2f screenpos(0, 0);
 
 bool rotatefloors = false;
+bool playerplaced = false, endplaced=false;
 float xsnap = 30, ysnap = 30;
 
 int main(){
@@ -64,6 +65,14 @@ void inputevents(sf::Event *event){
             rotatelastframe = false;
             rotatefloors = !rotatefloors;
         }
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+            activeobj = FLOOR;
+        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+            activeobj = PLAYER;
+        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
+            activeobj = ENEMEY;
+        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
+            activeobj = END;
     }
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
         screenpos.x += MOVESPEED;
@@ -95,6 +104,10 @@ sf::RectangleShape getCursorShape(){
             rectbuffer.setSize(sf::Vector2f(300, 30));
             break;
         case PLAYER:
+            if(playerplaced){
+                activeobj = FLOOR;
+                break;
+            }
             rectbuffer.setSize(sf::Vector2f(50, 70));
             rectbuffer.setFillColor(sf::Color::Blue);
             break;
@@ -103,8 +116,13 @@ sf::RectangleShape getCursorShape(){
             rectbuffer.setFillColor(sf::Color::Red);
             break;
         case END:
+            if(endplaced){
+                activeobj = FLOOR;
+                break;
+            }
             rectbuffer.setSize(sf::Vector2f(100, 100));
             rectbuffer.setFillColor(sf::Color::Green);
+            break;
         default:
             rectbuffer.setSize(sf::Vector2f(300, 30));
     };
@@ -136,6 +154,10 @@ void lockFrames(){
 void placeObject(){
     objects.push_back(getCursorShape());
     actualpos.push_back(objects.back().getPosition() + screenpos);
+    if(activeobj == PLAYER)
+        playerplaced = true;
+    else if(activeobj == END)
+        endplaced = true;
 }
 
 float roundToX(float num, float roundto){
