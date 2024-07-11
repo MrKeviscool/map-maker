@@ -18,7 +18,9 @@ sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fu
 sf::Event event;
 int currentpos = 0, activeobj = FLOOR;
 vector<sf::RectangleShape> objects;
+vector<sf::Vector2f> actualpos;
 sf::RectangleShape getCursorShape();
+sf::Vector2f curoffset(0, 0);
 
 float xsnap = 50, ysnap = 30;
 
@@ -77,7 +79,6 @@ sf::RectangleShape getCursorShape(){
     rectbuffer.setPosition(
         roundToX(sf::Mouse::getPosition().x, xsnap), 
         roundToX(sf::Mouse::getPosition().y, ysnap));
-    
     return rectbuffer;
 }
 
@@ -102,6 +103,7 @@ void lockFrames(){
 
 void placeObject(){
     objects.push_back(getCursorShape());
+    actualpos.push_back(objects.back().getPosition() + curoffset);
 }
 
 float roundToX(float num, float roundto){
@@ -114,7 +116,7 @@ float roundToX(float num, float roundto){
 void writeToFile(){
     for(int i = 0; i < objects.size(); i++){
         cout << "index " << i << ": ";
-        cout << objects[i].getPosition().x << " " << objects[i].getPosition().y << " ";
+        cout << actualpos[i].x << " " << actualpos[i].y << " ";
         cout << objects[i].getSize().x << " " << objects[i].getSize().y << " ";
         cout << endl;
     }
