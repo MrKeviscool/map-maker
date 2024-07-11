@@ -7,30 +7,36 @@
 #define STEADY_CLOCK std::chrono::steady_clock
 
 #define FLOOR 0
-#define LONGFLOOR 1
-using namespace std;
-const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
+#define PLAYER 1
+#define ENEMEY 2
+#define END 3
 
-void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), writeToFile();
+using namespace std;
+
+const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
+const float MOVESPEED = WIDTH/MAXFPS;
+
+void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile();
 float roundToX(float num, float roundto);
+sf::RectangleShape getCursorShape();
 sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
 
 sf::Event event;
-int currentpos = 0, activeobj = FLOOR;
+int activeobj = PLAYER;
+
 vector<sf::RectangleShape> objects;
 vector<sf::Vector2f> actualpos;
-sf::RectangleShape getCursorShape();
-sf::Vector2f curoffset(0, 0);
+sf::Vector2f screenpos(0, 0);
+
 
 float xsnap = 50, ysnap = 30;
 
 int main(){
     while(window.isOpen()){
         inputevents(&event);
+        moveScreen();
         display();
         lockFrames();
-
-
     }
     writeToFile();
     return 0;
@@ -51,6 +57,12 @@ void inputevents(sf::Event *event){
             placeObject();
         }
     }
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
+        screenpos.x += MOVESPEED;
+    }
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
+        screenpos.x -= MOVESPEED;
+    }
 }
 
 void display(){
@@ -70,9 +82,17 @@ sf::RectangleShape getCursorShape(){
         case FLOOR:
             rectbuffer.setSize(sf::Vector2f(300, 30));
             break;
-        case LONGFLOOR:
-            rectbuffer.setSize(sf::Vector2f(1200, 30));
+        case PLAYER:
+            rectbuffer.setSize(sf::Vector2f(50, 70));
+            rectbuffer.setFillColor(sf::Color::Blue);
             break;
+        case ENEMEY:
+            rectbuffer.setSize(sf::Vector2f(50, 70));
+            rectbuffer.setFillColor(sf::Color::Red);
+            break;
+        case END:
+            rectbuffer.setSize(sf::Vector2f(100, 100));
+            rectbuffer.setFillColor(sf::Color::Green);
         default:
             rectbuffer.setSize(sf::Vector2f(300, 30));
     };
@@ -103,7 +123,7 @@ void lockFrames(){
 
 void placeObject(){
     objects.push_back(getCursorShape());
-    actualpos.push_back(objects.back().getPosition() + curoffset);
+    actualpos.push_back(objects.back().getPosition() + screenpos);
 }
 
 float roundToX(float num, float roundto){
@@ -119,5 +139,11 @@ void writeToFile(){
         cout << actualpos[i].x << " " << actualpos[i].y << " ";
         cout << objects[i].getSize().x << " " << objects[i].getSize().y << " ";
         cout << endl;
+    }
+}
+
+void moveScreen(){
+    for(int i = 0; i < objects.size(); i++){
+        objects[i].setPosition(actualpos[i] - screenpos);
     }
 }
