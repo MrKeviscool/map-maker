@@ -3,6 +3,7 @@
 #include <thread>
 #include <chrono>
 #include <cmath>
+#include <fstream>
 #include <SFML/Graphics.hpp>
 #define STEADY_CLOCK std::chrono::steady_clock
 
@@ -24,14 +25,16 @@ sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fu
 
 sf::Event event;
 int activeobj = FLOOR;
-
+ 
 vector<sf::RectangleShape> objects;
+vector<int> type;
 vector<sf::Vector2f> actualpos;
 sf::Vector2f screenpos(0, 0);
 
 bool rotatefloors = false;
 bool playerplaced = false, endplaced=false;
 float xsnap = 30, ysnap = 30;
+int mapsamount = 1;
 
 int main(){
     while(window.isOpen()){
@@ -168,6 +171,10 @@ float roundToX(float num, float roundto){
 }
 
 void writeToFile(){
+    ofstream file("maps");
+    file << mapsamount;
+    file << "/";
+
     for(int i = 0; i < objects.size(); i++){
         cout << "index " << i << ": ";
         cout << actualpos[i].x << " " << actualpos[i].y << " ";
