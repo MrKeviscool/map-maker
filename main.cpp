@@ -11,9 +11,9 @@
 using namespace std;
 
 const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
-const float MOVESPEED = WIDTH/MAXFPS;
+const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 5, SNAPSIZE = 5;
 
-void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile();
+void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(char buttclicked);
 float roundToX(float num, float roundto);
 sf::RectangleShape getCursorShape();
 
@@ -74,9 +74,23 @@ void inputevents(sf::Event *event){
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
         screenpos.x += MOVESPEED;
     }
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
         screenpos.x -= MOVESPEED;
     }
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
+        screenpos.y -= MOVESPEED;
+    }
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
+        screenpos.y += MOVESPEED;
+    }
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::J))
+        resizeObj('j');
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::L))
+        resizeObj('l');
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::K))
+        resizeObj('k');
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::I))
+        resizeObj('i');
 }
 
 void display(){
@@ -157,9 +171,9 @@ void placeObject(){
 }
 
 float roundToX(float num, float roundto){
-    if(num <= 0){
-        return num;
-    }
+    // if(num <= 0){
+    //     return num;
+    // }
     return round(num/roundto)*roundto;
 }
 
@@ -180,4 +194,40 @@ void moveScreen(){
     for(int i = 0; i < objects.size(); i++){
         objects[i].shape.setPosition(objects[i].actualpos - screenpos);
     }
+}
+
+void resizeObj(char buttclicked){
+    sf::Vector2f *obj;
+    switch(activeobj){
+        case FLOOR:
+            obj = &floorsize;
+            break;
+        case PLAYER:
+            obj = &playersize;
+            break;
+        case ENEMEY:
+            obj = &enemeysize;
+        case END:
+            obj = &endsize;
+        default:
+            obj = &floorsize;
+    };
+    switch(buttclicked){
+        case 'j':
+            if(obj->x <= 1)
+                break;
+            obj->x -= RESIZESPEED;
+            break;
+        case 'k':
+            if(obj->y <= 1)
+                break;
+            obj->y -= RESIZESPEED;
+            break;
+        case 'l':
+            obj->x += RESIZESPEED;
+            break;
+        case 'i':
+            obj->y += RESIZESPEED;
+        break;
+    };
 }
