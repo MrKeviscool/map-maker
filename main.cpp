@@ -5,6 +5,7 @@
 #include <cmath>
 #include <fstream>
 #include <SFML/Graphics.hpp>
+#include "objects.hpp"
 #define STEADY_CLOCK std::chrono::steady_clock
 
 #define FLOOR 0
@@ -26,9 +27,7 @@ sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fu
 sf::Event event;
 int activeobj = FLOOR;
  
-vector<sf::RectangleShape> objects;
-vector<int> type;
-vector<sf::Vector2f> actualpos;
+vector<mapobj> objects;
 sf::Vector2f screenpos(0, 0);
 
 bool rotatefloors = false;
@@ -88,8 +87,8 @@ void inputevents(sf::Event *event){
 void display(){
     sf::RectangleShape cursorshape = getCursorShape();
     window.clear();
-    for(vector<sf::RectangleShape>::iterator objitr = objects.begin(); objitr < objects.end(); ++objitr){
-        window.draw(*objitr);
+    for(int i = 0; i < objects.size(); i++){
+        window.draw(objects[i].shape);
     }
     window.draw(cursorshape);
     window.display();
@@ -155,8 +154,8 @@ void lockFrames(){
 }
 
 void placeObject(){
-    objects.push_back(getCursorShape());
-    actualpos.push_back(objects.back().getPosition() + screenpos);
+    sf::RectangleShape shape = getCursorShape();
+    objects.push_back(mapobj(shape, shape.getPosition() + screenpos, activeobj));
     if(activeobj == PLAYER)
         playerplaced = true;
     else if(activeobj == END)
@@ -177,14 +176,14 @@ void writeToFile(){
 
     for(int i = 0; i < objects.size(); i++){
         cout << "index " << i << ": ";
-        cout << actualpos[i].x << " " << actualpos[i].y << " ";
-        cout << objects[i].getSize().x << " " << objects[i].getSize().y << " ";
+        cout << objects[i].actualpos.x << " " << objects[i].actualpos.y << " ";
+        cout << objects[i].shape.getSize().x << " " << objects[i].shape.getSize().y << " ";
         cout << endl;
     }
 }
 
 void moveScreen(){
     for(int i = 0; i < objects.size(); i++){
-        objects[i].setPosition(actualpos[i] - screenpos);
+        objects[i].shape.setPosition(objects[i].actualpos - screenpos);
     }
 }
