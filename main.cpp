@@ -11,9 +11,9 @@
 using namespace std;
 
 const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
-const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 2, RESIZESNAPSIZE = 30;
+const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 5, RESIZESNAPSIZE = 30;
 
-void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj();
+void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec);
 float roundToX(float num, float roundto);
 sf::RectangleShape getCursorShape();
 
@@ -100,7 +100,6 @@ void display(){
     window.draw(cursorshape);
     window.display();
 }
-
 
 sf::RectangleShape getCursorShape(){
     sf::RectangleShape rectbuffer;
@@ -223,6 +222,9 @@ void resizeObj(){
     if(movebuff < RESIZESNAPSIZE){
         return;
     }
+    if(obj == &floorsize && rotatefloors){
+        rotateNumsinVec2f(obj);
+    }
     switch(buttclicked){
         case 'j':
             if(obj->x <= 1){
@@ -246,4 +248,13 @@ void resizeObj(){
         break;
     };
     movebuff = 0;
+    if(obj == &floorsize && rotatefloors){
+        rotateNumsinVec2f(obj);
+    }
+}
+
+void rotateNumsinVec2f(sf::Vector2f *vec){
+    float tmp = vec->x;
+    vec->x = vec->y;
+    vec->y = tmp;
 }
