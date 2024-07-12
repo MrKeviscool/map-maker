@@ -8,11 +8,6 @@
 #include "objects.hpp"
 #define STEADY_CLOCK std::chrono::steady_clock
 
-#define FLOOR 0
-#define PLAYER 1
-#define ENEMEY 2
-#define END 3
-
 using namespace std;
 
 const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
@@ -100,21 +95,21 @@ sf::RectangleShape getCursorShape(){
     switch(activeobj){
         case FLOOR:
             if(rotatefloors){
-                rectbuffer.setSize(sf::Vector2f(30, 300));
+                rectbuffer.setSize(sf::Vector2f(floorsize.y, floorsize.x));
                 break;
             }
-            rectbuffer.setSize(sf::Vector2f(300, 30));
+            rectbuffer.setSize(floorsize);
             break;
         case PLAYER:
             if(playerplaced){
                 activeobj = FLOOR;
                 break;
             }
-            rectbuffer.setSize(sf::Vector2f(50, 70));
+            rectbuffer.setSize(playersize);
             rectbuffer.setFillColor(sf::Color::Blue);
             break;
         case ENEMEY:
-            rectbuffer.setSize(sf::Vector2f(50, 70));
+            rectbuffer.setSize(enemeysize);
             rectbuffer.setFillColor(sf::Color::Red);
             break;
         case END:
@@ -122,7 +117,7 @@ sf::RectangleShape getCursorShape(){
                 activeobj = FLOOR;
                 break;
             }
-            rectbuffer.setSize(sf::Vector2f(100, 100));
+            rectbuffer.setSize(endsize);
             rectbuffer.setFillColor(sf::Color::Green);
             break;
         default:
@@ -149,7 +144,6 @@ void lockFrames(){
         }
         tp = STEADY_CLOCK::now();
         doneframe = false;
-        // cout << "ft: " << ft << endl;
     }
 }
 
