@@ -11,9 +11,9 @@
 using namespace std;
 
 const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
-const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 5, SNAPSIZE = 5;
+const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 2, SNAPSIZE = 10;
 
-void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(char buttclicked);
+void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj();
 float roundToX(float num, float roundto);
 sf::RectangleShape getCursorShape();
 
@@ -83,14 +83,12 @@ void inputevents(sf::Event *event){
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
         screenpos.y += MOVESPEED;
     }
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::J))
-        resizeObj('j');
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::L))
-        resizeObj('l');
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::K))
-        resizeObj('k');
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::I))
-        resizeObj('i');
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::J) || 
+    sf::Keyboard::isKeyPressed(sf::Keyboard::K) ||
+    sf::Keyboard::isKeyPressed(sf::Keyboard::L) ||
+    sf::Keyboard::isKeyPressed(sf::Keyboard::I)){
+        resizeObj();
+    }
 }
 
 void display(){
@@ -196,7 +194,17 @@ void moveScreen(){
     }
 }
 
-void resizeObj(char buttclicked){
+void resizeObj(){
+    static float movebuff = 0;
+    char buttclicked;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::J))
+        buttclicked = 'j';
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::L))
+        buttclicked = 'l';
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::K))
+        buttclicked = 'k';
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::I))
+        buttclicked = 'i';
     sf::Vector2f *obj;
     switch(activeobj){
         case FLOOR:
@@ -212,22 +220,31 @@ void resizeObj(char buttclicked){
         default:
             obj = &floorsize;
     };
+    movebuff += RESIZESPEED;
+    if(movebuff < SNAPSIZE){
+        return;
+    }
     switch(buttclicked){
         case 'j':
-            if(obj->x <= 1)
+            if(obj->x <= 1){
+                obj->x = 1;
                 break;
-            obj->x -= RESIZESPEED;
-            break;
-        case 'k':
-            if(obj->y <= 1)
-                break;
-            obj->y -= RESIZESPEED;
-            break;
-        case 'l':
-            obj->x += RESIZESPEED;
+            }
+            obj->x -= SNAPSIZE;
             break;
         case 'i':
-            obj->y += RESIZESPEED;
+            if(obj->y <= 1){
+                obj->y = 1;
+                break;
+            }
+            obj->y -= SNAPSIZE;
+            break;
+        case 'l':
+            obj->x += SNAPSIZE;
+            break;
+        case 'k':
+            obj->y += SNAPSIZE;
         break;
     };
+    movebuff = 0;
 }
