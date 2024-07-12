@@ -11,7 +11,7 @@
 using namespace std;
 
 const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
-const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 2, SNAPSIZE = 10;
+const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 2, RESIZESNAPSIZE = 30;
 
 void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj();
 float roundToX(float num, float roundto);
@@ -176,16 +176,15 @@ float roundToX(float num, float roundto){
 }
 
 void writeToFile(){
-    ofstream file("maps");
+    ofstream file("maps", ios::app);
     file << mapsamount;
-    file << "/";
-
     for(int i = 0; i < objects.size(); i++){
-        cout << "index " << i << ": ";
-        cout << objects[i].actualpos.x << " " << objects[i].actualpos.y << " ";
-        cout << objects[i].shape.getSize().x << " " << objects[i].shape.getSize().y << " ";
-        cout << endl;
+        file << objects[i].actualpos.x << " " << objects[i].actualpos.y << " ";
+        file << objects[i].shape.getSize().x << " " << objects[i].shape.getSize().y << " ";
+        file << objects[i].type;
+        file << endl;
     }
+    file << "/" << endl;
 }
 
 void moveScreen(){
@@ -221,7 +220,7 @@ void resizeObj(){
             obj = &floorsize;
     };
     movebuff += RESIZESPEED;
-    if(movebuff < SNAPSIZE){
+    if(movebuff < RESIZESNAPSIZE){
         return;
     }
     switch(buttclicked){
@@ -230,20 +229,20 @@ void resizeObj(){
                 obj->x = 1;
                 break;
             }
-            obj->x -= SNAPSIZE;
+            obj->x -= RESIZESNAPSIZE;
             break;
         case 'i':
             if(obj->y <= 1){
                 obj->y = 1;
                 break;
             }
-            obj->y -= SNAPSIZE;
+            obj->y -= RESIZESNAPSIZE;
             break;
         case 'l':
-            obj->x += SNAPSIZE;
+            obj->x += RESIZESNAPSIZE;
             break;
         case 'k':
-            obj->y += SNAPSIZE;
+            obj->y += RESIZESNAPSIZE;
         break;
     };
     movebuff = 0;
