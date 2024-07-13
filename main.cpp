@@ -11,7 +11,7 @@
 using namespace std;
 
 const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
-const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 5, RESIZESNAPSIZE = 30;
+const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 5, SNAPSIZE = 30;
 
 void inputevents(sf::Event *event, bool freemem), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec), rotateFloor(), undo(), redo(), resetMap(), rmObj();
 float roundToX(float num, float roundto);
@@ -28,7 +28,6 @@ sf::Vector2f screenpos(0, 0);
 
 bool rotatefloors = false;
 bool playerplaced = false, endplaced=false;
-float xsnap = 30, ysnap = 30;
 float xmovesnapbuffer = 0, ymovesnapbuffer = 0;
 int mapsamount = 1;
 
@@ -100,31 +99,31 @@ void inputevents(sf::Event *event, bool freemem){
 
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
         xmovesnapbuffer += MOVESPEED;
-        if(xmovesnapbuffer > xsnap){
-            screenpos.x += roundToX(xmovesnapbuffer, xsnap);
+        if(xmovesnapbuffer > SNAPSIZE){
+            screenpos.x += roundToX(xmovesnapbuffer, SNAPSIZE);
             xmovesnapbuffer = 0;
         }
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
         xmovesnapbuffer += MOVESPEED;
-        if(xmovesnapbuffer > xsnap){
-            screenpos.x -= roundToX(xmovesnapbuffer, xsnap);
+        if(xmovesnapbuffer > SNAPSIZE){
+            screenpos.x -= roundToX(xmovesnapbuffer, SNAPSIZE);
             xmovesnapbuffer = 0;
         }
 
     }
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
         ymovesnapbuffer += MOVESPEED;
-        if(ymovesnapbuffer > xsnap){
-            screenpos.y -= roundToX(ymovesnapbuffer, xsnap);
+        if(ymovesnapbuffer > SNAPSIZE){
+            screenpos.y -= roundToX(ymovesnapbuffer, SNAPSIZE);
             ymovesnapbuffer = 0;
         }
 
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
         ymovesnapbuffer += MOVESPEED;
-        if(ymovesnapbuffer > xsnap){
-            screenpos.y += roundToX(ymovesnapbuffer, xsnap);
+        if(ymovesnapbuffer > SNAPSIZE){
+            screenpos.y += roundToX(ymovesnapbuffer, SNAPSIZE);
             ymovesnapbuffer = 0;
         }
 
@@ -181,8 +180,8 @@ sf::RectangleShape getCursorShape(){
             rectbuffer.setSize(sf::Vector2f(300, 30));
     };
     rectbuffer.setPosition(
-        roundToX(sf::Mouse::getPosition().x, xsnap), 
-        roundToX(sf::Mouse::getPosition().y, ysnap));
+        roundToX(sf::Mouse::getPosition().x, SNAPSIZE), 
+        roundToX(sf::Mouse::getPosition().y, SNAPSIZE));
     return rectbuffer;
 }
 
@@ -206,7 +205,7 @@ void lockFrames(){
 
 void placeObject(){
     sf::RectangleShape shape = getCursorShape();
-    objects.push_back(mapobj(shape, shape.getPosition() + sf::Vector2f(roundToX(screenpos.x, xsnap), roundToX(screenpos.y, ysnap)), activeobj));
+    objects.push_back(mapobj(shape, shape.getPosition() + sf::Vector2f(roundToX(screenpos.x, SNAPSIZE), roundToX(screenpos.y, SNAPSIZE)), activeobj));
     if(activeobj == PLAYER)
         playerplaced = true;
     else if(activeobj == END)
@@ -267,7 +266,7 @@ void resizeObj(){
             obj = &floorsize;
     };
     movebuff += RESIZESPEED;
-    if(movebuff < RESIZESNAPSIZE){
+    if(movebuff < SNAPSIZE){
         return;
     }
     if(obj == &floorsize && rotatefloors){
@@ -279,20 +278,20 @@ void resizeObj(){
                 obj->x = 1;
                 break;
             }
-            obj->x -= RESIZESNAPSIZE;
+            obj->x -= SNAPSIZE;
             break;
         case 'i':
             if(obj->y <= 1){
                 obj->y = 1;
                 break;
             }
-            obj->y -= RESIZESNAPSIZE;
+            obj->y -= SNAPSIZE;
             break;
         case 'l':
-            obj->x += RESIZESNAPSIZE;
+            obj->x += SNAPSIZE;
             break;
         case 'k':
-            obj->y += RESIZESNAPSIZE;
+            obj->y += SNAPSIZE;
         break;
     };
     movebuff = 0;
