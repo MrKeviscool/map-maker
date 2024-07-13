@@ -29,6 +29,7 @@ sf::Vector2f screenpos(0, 0);
 bool rotatefloors = false;
 bool playerplaced = false, endplaced=false;
 float xsnap = 30, ysnap = 30;
+float xmovesnapbuffer = 0, ymovesnapbuffer = 0;
 int mapsamount = 1;
 
 int main(){
@@ -98,16 +99,35 @@ void inputevents(sf::Event *event, bool freemem){
     }
 
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
-        screenpos.x += MOVESPEED;
+        xmovesnapbuffer += MOVESPEED;
+        if(xmovesnapbuffer > xsnap){
+            screenpos.x += roundToX(xmovesnapbuffer, xsnap);
+            xmovesnapbuffer = 0;
+        }
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
-        screenpos.x -= MOVESPEED;
+        xmovesnapbuffer += MOVESPEED;
+        if(xmovesnapbuffer > xsnap){
+            screenpos.x -= roundToX(xmovesnapbuffer, xsnap);
+            xmovesnapbuffer = 0;
+        }
+
     }
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
-        screenpos.y -= MOVESPEED;
+        ymovesnapbuffer += MOVESPEED;
+        if(ymovesnapbuffer > xsnap){
+            screenpos.y -= roundToX(ymovesnapbuffer, xsnap);
+            ymovesnapbuffer = 0;
+        }
+
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
-        screenpos.y += MOVESPEED;
+        ymovesnapbuffer += MOVESPEED;
+        if(ymovesnapbuffer > xsnap){
+            screenpos.y += roundToX(ymovesnapbuffer, xsnap);
+            ymovesnapbuffer = 0;
+        }
+
     }
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::J) || 
     sf::Keyboard::isKeyPressed(sf::Keyboard::K) ||
@@ -186,7 +206,7 @@ void lockFrames(){
 
 void placeObject(){
     sf::RectangleShape shape = getCursorShape();
-    objects.push_back(mapobj(shape, shape.getPosition() + screenpos, activeobj));
+    objects.push_back(mapobj(shape, shape.getPosition() + sf::Vector2f(roundToX(screenpos.x, xsnap), roundToX(screenpos.y, ysnap)), activeobj));
     if(activeobj == PLAYER)
         playerplaced = true;
     else if(activeobj == END)
