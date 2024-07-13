@@ -8,5 +8,4 @@ clean:
 	rm $(target)
 	rm ./maps
 run: $(target)
-	rm ./maps
 	./$(target)

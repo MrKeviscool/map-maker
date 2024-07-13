@@ -13,7 +13,7 @@ using namespace std;
 const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
 const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 5, RESIZESNAPSIZE = 30;
 
-void inputevents(sf::Event *event, bool freemem), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec), rotateFloor(), undo(), redo(), resetMap();
+void inputevents(sf::Event *event, bool freemem), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec), rotateFloor(), undo(), redo(), resetMap(), rmObj();
 float roundToX(float num, float roundto);
 sf::RectangleShape getCursorShape();
 
@@ -49,7 +49,7 @@ void inputevents(sf::Event *event, bool freemem){
     
     static void (*funcptrs[])() = {frotate, undo, redo, resetMap, writeToFile};
     static sf::Keyboard::Key keymap[] = {sf::Keyboard::Key::R, sf::Keyboard::Key::U, sf::Keyboard::Key::Y, sf::Keyboard::Key::X, sf::Keyboard::F};
-    static bool mouseDownLastFrame = false;
+    static bool leftMouseDownLastFrame = false, rightMouseDownLastFrame = false;
     static bool *downlastframe = (bool *)calloc(sizeof(keymap) / sizeof(sf::Keyboard::Key), sizeof(bool));
     
     if(freemem){
@@ -72,11 +72,18 @@ void inputevents(sf::Event *event, bool freemem){
             activeobj = END;  
         
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
-            mouseDownLastFrame = true;
+            leftMouseDownLastFrame = true;
         }
-        else if(mouseDownLastFrame){
-            mouseDownLastFrame = false;
+        else if(leftMouseDownLastFrame){
+            leftMouseDownLastFrame = false;
             placeObject();
+        }
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Right)){
+            rightMouseDownLastFrame = true;
+        }
+        else if(rightMouseDownLastFrame){
+            rightMouseDownLastFrame = false;
+            rmObj();
         }
     }
 
@@ -143,10 +150,10 @@ sf::RectangleShape getCursorShape(){
             rectbuffer.setFillColor(sf::Color::Red);
             break;
         case END:
-            if(endplaced){
-                activeobj = FLOOR;
-                break;
-            }
+            // if(endplaced){ //dont care if end placed rn
+                // activeobj = FLOOR;
+                // break;
+            // }
             rectbuffer.setSize(endsize);
             rectbuffer.setFillColor(sf::Color::Green);
             break;
@@ -232,8 +239,10 @@ void resizeObj(){
             break;
         case ENEMEY:
             obj = &enemeysize;
+            break;
         case END:
             obj = &endsize;
+            break;
         default:
             obj = &floorsize;
     };
@@ -282,11 +291,28 @@ void undo(){
     if(objects.size() <= 0){
         return;
     }
+    if(objects.back().type == PLAYER){
+        playerplaced = false;
+    }
     redobuffer.push_back(objects.back());
     objects.pop_back();
 }
 void redo(){
     if(redobuffer.size() <= 0){
+        return;
+    }
+    // if(redobuffer.back().type == PLAYER){
+        // if(playerplaced){
+            // redobuffer.pop_back();
+            // return;
+        // }
+        // playerplaced == true;
+    // }
+    
+    //TODO: redo player
+
+    if(redobuffer.back().type == PLAYER){
+        redobuffer.pop_back();
         return;
     }
     objects.push_back(redobuffer.back());
@@ -304,4 +330,17 @@ void resetMap(){
     enemeysize = defaultenemeysize;
     endsize = defaultendsize;
     screenpos = sf::Vector2f(0, 0);
+}
+
+void rmObj(){
+    sf::Vector2f mouseshape = getCursorShape().getPosition();
+    for(int i = 0; i < objects.size(); i++){
+        if(objects[i].shape.getPosition() == mouseshape){
+            if(objects[i].type == PLAYER){
+                playerplaced = false;
+            }
+            redobuffer.push_back(objects[i]);
+            objects.erase(objects.begin() + i);
+        }
+    }
 }
