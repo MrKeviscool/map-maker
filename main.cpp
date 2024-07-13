@@ -63,28 +63,6 @@ void inputevents(sf::Event *event){
             mouseDownLastFrame = false;
             placeObject();
         }
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::R)){
-            rDownLastFrame = true;
-        }
-        else if(rDownLastFrame){
-            rDownLastFrame = false;
-            frotate();
-        }
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::U)){
-            uDownLastFrame = true;
-        }
-        else if(uDownLastFrame){
-            uDownLastFrame = false;
-            // undo();
-            (*funcptrs[1])();
-        }
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Y)){
-            yDownLastFrame = true;
-        }
-        else if(yDownLastFrame){
-            redo();
-            yDownLastFrame = false;
-        }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
             activeobj = FLOOR;
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
@@ -93,6 +71,9 @@ void inputevents(sf::Event *event){
             activeobj = ENEMEY;
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
             activeobj = END;
+    }
+    for(int i = 0; i < sizeof(downlastframe)/sizeof(bool); i++){
+        
     }
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
         screenpos.x += MOVESPEED;
