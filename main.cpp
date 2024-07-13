@@ -13,7 +13,7 @@ using namespace std;
 const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
 const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 5, RESIZESNAPSIZE = 30;
 
-void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec), rotateFloor(), undo(), redo();
+void inputevents(sf::Event *event, bool freemem), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec), rotateFloor(), undo(), redo();
 float roundToX(float num, float roundto);
 sf::RectangleShape getCursorShape();
 
@@ -33,23 +33,28 @@ int mapsamount = 1;
 
 int main(){
     while(window.isOpen()){
-        inputevents(&event);
+        inputevents(&event, false);
         moveScreen();
         display();
         lockFrames();
     }
     writeToFile();
+    inputevents(nullptr, true);
     return 0;
 }
 
-void inputevents(sf::Event *event){
-    static bool mouseDownLastFrame = false, uDownLastFrame = false, yDownLastFrame = false, rDownLastFrame = false;
-
+void inputevents(sf::Event *event, bool freemem){
+    
     void (*frotate)() = []() -> void{rotatefloors = !rotatefloors;};
-
     void (*funcptrs[])() = {frotate, undo, redo};
-    sf::Keyboard::Key keymap[] = {sf::Keyboard::R ,sf::Keyboard::Key::U, sf::Keyboard::Key::Y};
-    bool downlastframe[] = {false, false, false};
+    sf::Keyboard::Key keymap[] = {sf::Keyboard::Key::R ,sf::Keyboard::Key::U, sf::Keyboard::Key::Y};
+    static bool mouseDownLastFrame = false;
+    static bool *downlastframe = (bool *)calloc(sizeof(keymap) / sizeof(sf::Keyboard::Key), sizeof(bool));
+    
+    if(freemem){
+        free(downlastframe);
+        return;
+    }
 
     while(window.pollEvent(*event)){
         if(event->type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
@@ -72,9 +77,17 @@ void inputevents(sf::Event *event){
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
             activeobj = END;
     }
-    for(int i = 0; i < sizeof(downlastframe)/sizeof(bool); i++){
-        
+    
+    for(int i = 0; i < sizeof(downlastframe) / sizeof(bool); i++){
+        if(sf::Keyboard::isKeyPressed(keymap[i])){
+            downlastframe[i] = true;
+        }
+        else if(downlastframe[i]){
+            downlastframe[i] = false;
+            (*funcptrs[i])();
+        }
     }
+
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
         screenpos.x += MOVESPEED;
     }
