@@ -5,6 +5,7 @@
 #define ENEMEY 2
 #define END 3
 
+const sf::Vector2f defaultfloorsize(300, 30), defaultplayersize(50, 70), defaultenemeysize(50, 70), defaultendsize(100, 100);
 
 class mapobj{
     public:
@@ -14,7 +15,7 @@ class mapobj{
         mapobj(sf::RectangleShape shape, sf::Vector2f actualpos, int type) : shape(shape), actualpos(actualpos), type(type){}
 };
 
-sf::Vector2f floorsize(300, 30);
-sf::Vector2f playersize(50, 70);
-sf::Vector2f enemeysize(50, 70);
-sf::Vector2f endsize(100, 100);
+sf::Vector2f floorsize(defaultfloorsize);
+sf::Vector2f playersize(defaultplayersize);
+sf::Vector2f enemeysize(defaultenemeysize);
+sf::Vector2f endsize(defaultendsize);

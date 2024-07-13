@@ -13,7 +13,7 @@ using namespace std;
 const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
 const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 5, RESIZESNAPSIZE = 30;
 
-void inputevents(sf::Event *event, bool freemem), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec), rotateFloor(), undo(), redo();
+void inputevents(sf::Event *event, bool freemem), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec), rotateFloor(), undo(), redo(), resetMap();
 float roundToX(float num, float roundto);
 sf::RectangleShape getCursorShape();
 
@@ -38,16 +38,17 @@ int main(){
         display();
         lockFrames();
     }
-    writeToFile();
+    // writeToFile();
     inputevents(nullptr, true);
     return 0;
 }
 
 void inputevents(sf::Event *event, bool freemem){
     
-    void (*frotate)() = []() -> void{rotatefloors = !rotatefloors;};
-    void (*funcptrs[])() = {frotate, undo, redo};
-    sf::Keyboard::Key keymap[] = {sf::Keyboard::Key::R ,sf::Keyboard::Key::U, sf::Keyboard::Key::Y};
+    static void (*frotate)() = []() -> void{rotatefloors = !rotatefloors;};
+    
+    static void (*funcptrs[])() = {frotate, undo, redo, resetMap, writeToFile};
+    static sf::Keyboard::Key keymap[] = {sf::Keyboard::Key::R, sf::Keyboard::Key::U, sf::Keyboard::Key::Y, sf::Keyboard::Key::X, sf::Keyboard::F};
     static bool mouseDownLastFrame = false;
     static bool *downlastframe = (bool *)calloc(sizeof(keymap) / sizeof(sf::Keyboard::Key), sizeof(bool));
     
@@ -61,13 +62,6 @@ void inputevents(sf::Event *event, bool freemem){
             window.close();
             return;
         }
-        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
-            mouseDownLastFrame = true;
-        }
-        else if(mouseDownLastFrame){
-            mouseDownLastFrame = false;
-            placeObject();
-        }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
             activeobj = FLOOR;
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
@@ -75,9 +69,17 @@ void inputevents(sf::Event *event, bool freemem){
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
             activeobj = ENEMEY;
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
-            activeobj = END;
+            activeobj = END;  
+        
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
+            mouseDownLastFrame = true;
+        }
+        else if(mouseDownLastFrame){
+            mouseDownLastFrame = false;
+            placeObject();
+        }
     }
-    
+
     for(int i = 0; i < sizeof(downlastframe) / sizeof(bool); i++){
         if(sf::Keyboard::isKeyPressed(keymap[i])){
             downlastframe[i] = true;
@@ -289,4 +291,17 @@ void redo(){
     }
     objects.push_back(redobuffer.back());
     redobuffer.pop_back();
+}
+
+void resetMap(){
+    objects.clear();
+    redobuffer.clear();
+    rotatefloors = false;
+    playerplaced = false;
+    endplaced = false;
+    floorsize = defaultfloorsize;
+    playersize = defaultplayersize;
+    enemeysize = defaultenemeysize;
+    endsize = defaultendsize;
+    screenpos = sf::Vector2f(0, 0);
 }
