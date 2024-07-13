@@ -13,7 +13,7 @@ using namespace std;
 const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
 const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 5, RESIZESNAPSIZE = 30;
 
-void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec);
+void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec), undo(), redo();
 float roundToX(float num, float roundto);
 sf::RectangleShape getCursorShape();
 
@@ -23,6 +23,7 @@ sf::Event event;
 int activeobj = FLOOR;
  
 vector<mapobj> objects;
+vector<mapobj> redobuffer;
 sf::Vector2f screenpos(0, 0);
 
 bool rotatefloors = false;
@@ -42,7 +43,7 @@ int main(){
 }
 
 void inputevents(sf::Event *event){
-    static bool mouseDownLastFrame = false, rotatelastframe = false;
+    static bool mouseDownLastFrame = false, uDownLastFrame = false, yDownLastFrame = false, rDownLastFrame = false;
     while(window.pollEvent(*event)){
         if(event->type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
             window.close();
@@ -51,16 +52,30 @@ void inputevents(sf::Event *event){
         if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
             mouseDownLastFrame = true;
         }
-        if(mouseDownLastFrame && !sf::Mouse::isButtonPressed(sf::Mouse::Left)){
+        else if(mouseDownLastFrame){
             mouseDownLastFrame = false;
             placeObject();
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::R)){
-            rotatelastframe = true;
+            rDownLastFrame = true;
         }
-        if(rotatelastframe && !sf::Keyboard::isKeyPressed(sf::Keyboard::R)){
-            rotatelastframe = false;
+        else if(rDownLastFrame){
+            rDownLastFrame = false;
             rotatefloors = !rotatefloors;
+        }
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::U)){
+            uDownLastFrame = true;
+        }
+        else if(uDownLastFrame){
+            uDownLastFrame = false;
+            undo();
+        }
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Y)){
+            yDownLastFrame = true;
+        }
+        else if(yDownLastFrame){
+            redo();
+            yDownLastFrame = false;
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
             activeobj = FLOOR;
@@ -257,4 +272,19 @@ void rotateNumsinVec2f(sf::Vector2f *vec){
     float tmp = vec->x;
     vec->x = vec->y;
     vec->y = tmp;
+}
+
+void undo(){
+    if(objects.size() <= 0){
+        return;
+    }
+    redobuffer.push_back(objects.back());
+    objects.pop_back();
+}
+void redo(){
+    if(redobuffer.size() <= 0){
+        return;
+    }
+    objects.push_back(redobuffer.back());
+    redobuffer.pop_back();
 }

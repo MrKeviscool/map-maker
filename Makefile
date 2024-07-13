@@ -6,5 +6,7 @@ $(target): main.cpp
 	g++ -o $(target) $^ $(SFML_FLAGS)
 clean:
 	rm $(target)
+	rm ./maps
 run: $(target)
+	rm ./maps
 	./$(target)
