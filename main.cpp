@@ -87,7 +87,7 @@ void inputevents(sf::Event *event, bool freemem){
         }
     }
 
-    for(int i = 0; i < sizeof(downlastframe) / sizeof(bool); i++){
+    for(int i = 0; i < sizeof(keymap) / sizeof(sf::Keyboard::Key); i++){
         if(sf::Keyboard::isKeyPressed(keymap[i])){
             downlastframe[i] = true;
         }
