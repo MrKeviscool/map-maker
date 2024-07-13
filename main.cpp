@@ -13,7 +13,7 @@ using namespace std;
 const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
 const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 5, RESIZESNAPSIZE = 30;
 
-void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec), undo(), redo();
+void inputevents(sf::Event *event), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec), rotateFloor(), undo(), redo();
 float roundToX(float num, float roundto);
 sf::RectangleShape getCursorShape();
 
@@ -44,6 +44,13 @@ int main(){
 
 void inputevents(sf::Event *event){
     static bool mouseDownLastFrame = false, uDownLastFrame = false, yDownLastFrame = false, rDownLastFrame = false;
+
+    void (*frotate)() = []() -> void{rotatefloors = !rotatefloors;};
+
+    void (*funcptrs[])() = {frotate, undo, redo};
+    sf::Keyboard::Key keymap[] = {sf::Keyboard::R ,sf::Keyboard::Key::U, sf::Keyboard::Key::Y};
+    bool downlastframe[] = {false, false, false};
+
     while(window.pollEvent(*event)){
         if(event->type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
             window.close();
@@ -61,14 +68,15 @@ void inputevents(sf::Event *event){
         }
         else if(rDownLastFrame){
             rDownLastFrame = false;
-            rotatefloors = !rotatefloors;
+            frotate();
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::U)){
             uDownLastFrame = true;
         }
         else if(uDownLastFrame){
             uDownLastFrame = false;
-            undo();
+            // undo();
+            (*funcptrs[1])();
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Y)){
             yDownLastFrame = true;
