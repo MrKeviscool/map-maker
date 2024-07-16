@@ -18,7 +18,9 @@ float roundToX(float num, float roundto);
 sf::RectangleShape getCursorShape();
 
 sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
+
 sf::Font font;
+int amountoftexts = 0;
 
 bool drawText = false;
 sf::Text *texts;
@@ -35,16 +37,27 @@ float xmovesnapbuffer = 0, ymovesnapbuffer = 0;
 
 int main(){
 
-    // if(font.loadFromFile("font.ttf")){
-    //     drawText = true;
-    //     const int upfrombot = 12;
-    //     const int charsize = 10;
-    //     sf::Text txt[] = {
-    //         sf::Text("W, A, S, D - move", font, 28),
-    //     };
-    //     txt[0].setPosition(1000, 1000);
-    //     texts = txt;
-    // }
+    if(font.loadFromFile("font.ttf")){
+        drawText = true;
+        const int charsize = 10;
+        static sf::Text txt[] = {
+            sf::Text("W, S, A, D - move", font),
+            sf::Text("I, K, J, L - re-size", font),
+            sf::Text("1-4 - select-type", font),
+            sf::Text("R - rotate floor", font),
+            sf::Text("F - save to file", font),
+            sf::Text("X- clear", font),
+        };
+        const int upfrombot = 30;
+        amountoftexts = sizeof(txt)/sizeof(sf::Text);
+        for(int i = 0; i < amountoftexts; i++){
+            txt[i].setPosition(1680, 1070-((amountoftexts-i)*upfrombot));
+        }
+        texts = txt;
+    }
+    else{
+        cout << "cant load font file\n";
+    }
 
     while(window.isOpen()){
         inputevents(&event, false);
@@ -157,7 +170,11 @@ void display(){
         window.draw(objects[i].shape);
     }
     window.draw(cursorshape);
-    // if(drawText){}
+    if(drawText){
+        for(int i = 0; i < amountoftexts; i++){
+            window.draw(texts[i]);
+        }
+    }
     window.display();
 }
 
