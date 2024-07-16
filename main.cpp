@@ -18,10 +18,13 @@ float roundToX(float num, float roundto);
 sf::RectangleShape getCursorShape();
 
 sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
+sf::Font font;
 
+bool drawText = false;
+sf::Text *texts;
 sf::Event event;
 int activeobj = FLOOR;
- 
+
 vector<mapobj> objects;
 vector<mapobj> redobuffer;
 sf::Vector2f screenpos(0, 0);
@@ -29,9 +32,20 @@ sf::Vector2f screenpos(0, 0);
 bool rotatefloors = false;
 bool playerplaced = false, endplaced=false;
 float xmovesnapbuffer = 0, ymovesnapbuffer = 0;
-int mapsamount = 1;
 
 int main(){
+
+    // if(font.loadFromFile("font.ttf")){
+    //     drawText = true;
+    //     const int upfrombot = 12;
+    //     const int charsize = 10;
+    //     sf::Text txt[] = {
+    //         sf::Text("W, A, S, D - move", font, 28),
+    //     };
+    //     txt[0].setPosition(1000, 1000);
+    //     texts = txt;
+    // }
+
     while(window.isOpen()){
         inputevents(&event, false);
         moveScreen();
@@ -143,6 +157,7 @@ void display(){
         window.draw(objects[i].shape);
     }
     window.draw(cursorshape);
+    // if(drawText){}
     window.display();
 }
 
@@ -221,11 +236,11 @@ float roundToX(float num, float roundto){
 
 void writeToFile(){
     ofstream file("maps", ios::app);
-    file << mapsamount;
+    file << objects.size() << endl;
     for(int i = 0; i < objects.size(); i++){
+        file << objects[i].type << " ";
         file << objects[i].actualpos.x << " " << objects[i].actualpos.y << " ";
-        file << objects[i].shape.getSize().x << " " << objects[i].shape.getSize().y << " ";
-        file << objects[i].type;
+        file << objects[i].shape.getSize().x << " " << objects[i].shape.getSize().y;
         file << endl;
     }
     file << "/" << endl;

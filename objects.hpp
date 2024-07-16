@@ -5,7 +5,7 @@
 #define ENEMEY 2
 #define END 3
 
-const sf::Vector2f defaultfloorsize(300, 30), defaultplayersize(50, 70), defaultenemeysize(50, 70), defaultendsize(100, 100);
+const sf::Vector2f defaultfloorsize(300, 30), defaultplayersize(60, 90), defaultenemeysize(60, 90), defaultendsize(90, 90);
 
 class mapobj{
     public:
