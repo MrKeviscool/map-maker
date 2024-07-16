@@ -352,20 +352,15 @@ void redo(){
     if(redobuffer.size() <= 0){
         return;
     }
-    // if(redobuffer.back().type == PLAYER){
-        // if(playerplaced){
-            // redobuffer.pop_back();
-            // return;
-        // }
-        // playerplaced == true;
-    // }
-    
-    //TODO: redo player
-
     if(redobuffer.back().type == PLAYER){
-        redobuffer.pop_back();
-        return;
+        if(playerplaced){
+            redobuffer.pop_back();
+            return;
+        }
+        playerplaced = true;
+        activeobj = FLOOR;
     }
+    
     objects.push_back(redobuffer.back());
     redobuffer.pop_back();
 }
