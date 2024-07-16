@@ -46,7 +46,7 @@ int main(){
             sf::Text("1-4 - select-type", font),
             sf::Text("R - rotate floor", font),
             sf::Text("F - save to file", font),
-            sf::Text("X- clear", font),
+            sf::Text("X - clear", font),
         };
         const int upfrombot = 30;
         amountoftexts = sizeof(txt)/sizeof(sf::Text);
