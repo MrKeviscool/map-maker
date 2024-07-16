@@ -201,10 +201,10 @@ sf::RectangleShape getCursorShape(){
             rectbuffer.setFillColor(sf::Color::Red);
             break;
         case END:
-            // if(endplaced){ //dont care if end placed rn
-                // activeobj = FLOOR;
-                // break;
-            // }
+            if(endplaced){
+                activeobj = FLOOR;
+                break;
+            }
             rectbuffer.setSize(endsize);
             rectbuffer.setFillColor(sf::Color::Green);
             break;
@@ -345,6 +345,9 @@ void undo(){
     if(objects.back().type == PLAYER){
         playerplaced = false;
     }
+    if(objects.back().type == END){
+        endplaced = false;
+    }
     redobuffer.push_back(objects.back());
     objects.pop_back();
 }
@@ -359,6 +362,14 @@ void redo(){
         }
         playerplaced = true;
         activeobj = FLOOR;
+    }
+    if(redobuffer.back().type == END){
+        if(endplaced){
+            redobuffer.pop_back();
+            return;
+        }
+        endplaced = true;
+        activeobj = END;
     }
     
     objects.push_back(redobuffer.back());
