@@ -260,7 +260,7 @@ void writeToFile(){
         file << objects[i].shape.getSize().x << " " << objects[i].shape.getSize().y;
         file << endl;
     }
-    file << "/" << endl;
+    // file << "/" << endl;
 }
 
 void moveScreen(){
