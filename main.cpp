@@ -251,14 +251,28 @@ float roundToX(float num, float roundto){
     return round(num/roundto)*roundto;
 }
 
-void writeToFile(){
+void writeToFile(){ //all new stuff really hacky. dunno if i want it
+    bool writeNewLine = true;
+    {
+        ifstream file("maps");
+            if(!file.is_open()){
+                writeNewLine = false;
+            }
+        file.close();
+    }
     ofstream file("maps", ios::app);
-    file << objects.size() << endl;
+    if(writeNewLine){
+        file << "\n" << objects.size() << endl;
+    }
+    else{
+        file << objects.size() << endl;
+    }
     for(int i = 0; i < objects.size(); i++){
         file << objects[i].type << " ";
         file << objects[i].actualpos.x << " " << objects[i].actualpos.y << " ";
-        file << objects[i].shape.getSize().x << " " << objects[i].shape.getSize().y;
-        file << endl;
+        file << objects[i].shape.getSize().x << " " << objects[i].shape.getSize().y << " ";
+        if(i < objects.size()-1)
+            file << endl;
     }
     // file << "/" << endl;
 }
