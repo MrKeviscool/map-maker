@@ -253,14 +253,12 @@ float roundToX(float num, float roundto){
 
 void writeToFile(){ //all new stuff really hacky. dunno if i want it
     bool writeNewLine = true;
-    {
-        ifstream file("maps");
-            if(!file.is_open()){
-                writeNewLine = false;
-            }
-        file.close();
+    fstream file("maps", ios::in);
+    if(!file.is_open()){
+        writeNewLine = false;
     }
-    ofstream file("maps", ios::app);
+    file.close();
+    file = fstream("maps", ios::app);
     if(writeNewLine){
         file << "\n" << objects.size() << endl;
     }
@@ -274,7 +272,6 @@ void writeToFile(){ //all new stuff really hacky. dunno if i want it
         if(i < objects.size()-1)
             file << endl;
     }
-    // file << "/" << endl;
 }
 
 void moveScreen(){
