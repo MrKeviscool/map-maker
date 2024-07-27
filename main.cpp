@@ -395,7 +395,7 @@ void redo(){
             return;
         }
         endplaced = true;
-        activeobj = END;
+        activeobj = FLOOR;
     }
     
     objects.push_back(redobuffer.back());
