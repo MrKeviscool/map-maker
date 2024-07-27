@@ -73,9 +73,21 @@ int main(){
 void inputevents(sf::Event *event, bool freemem){
     
     static void (*frotate)() = []() -> void{rotatefloors = !rotatefloors;};
+
+    static void (*changenemy)() = []() -> void{
+        if(activeobj==ENEMEY){
+            activeobj = SPIKES;
+        }
+        else if(activeobj == SPIKES){
+            activeobj == ENEMEY;
+        }
+        else{
+            activeobj = ENEMEY;
+        }
+    };
     
-    static void (*funcptrs[])() = {frotate, undo, redo, resetMap, writeToFile};
-    static sf::Keyboard::Key keymap[] = {sf::Keyboard::Key::R, sf::Keyboard::Key::U, sf::Keyboard::Key::Y, sf::Keyboard::Key::X, sf::Keyboard::F};
+    static void (*funcptrs[])() = {frotate, undo, redo, resetMap, writeToFile, changenemy};
+    static sf::Keyboard::Key keymap[] = {sf::Keyboard::Key::R, sf::Keyboard::Key::U, sf::Keyboard::Key::Y, sf::Keyboard::Key::X, sf::Keyboard::F, sf::Keyboard::Num3};
     static bool leftMouseDownLastFrame = false, rightMouseDownLastFrame = false;
     static bool *downlastframe = (bool *)calloc(sizeof(keymap) / sizeof(sf::Keyboard::Key), sizeof(bool));
     
@@ -93,8 +105,6 @@ void inputevents(sf::Event *event, bool freemem){
             activeobj = FLOOR;
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
             activeobj = PLAYER;
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
-            activeobj = ENEMEY;
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
             activeobj = END;  
         
@@ -208,6 +218,10 @@ sf::RectangleShape getCursorShape(){
             rectbuffer.setSize(endsize);
             rectbuffer.setFillColor(sf::Color::Green);
             break;
+        case SPIKES:
+            rectbuffer.setSize(spikesize);
+            rectbuffer.setFillColor(sf::Color::Magenta);
+            break;
         default:
             rectbuffer.setSize(sf::Vector2f(300, 30));
     };
@@ -305,6 +319,9 @@ void resizeObj(){
         case END:
             obj = &endsize;
             break;
+        case SPIKES:
+            obj = &spikesize;
+            break;
         default:
             obj = &floorsize;
     };
@@ -397,6 +414,7 @@ void resetMap(){
     playersize = defaultplayersize;
     enemeysize = defaultenemeysize;
     endsize = defaultendsize;
+    spikesize = defaultspikesize;
     screenpos = sf::Vector2f(0, 0);
 }
 
