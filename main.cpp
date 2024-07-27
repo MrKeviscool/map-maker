@@ -259,13 +259,10 @@ void placeObject(){
 }
 
 float roundToX(float num, float roundto){
-    // if(num <= 0){
-    //     return num;
-    // }
     return round(num/roundto)*roundto;
 }
 
-void writeToFile(){ //all new stuff really hacky. dunno if i want it
+void writeToFile(){
     bool writeNewLine = true;
     fstream file("maps", ios::in);
     if(!file.is_open()){
