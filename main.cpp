@@ -274,11 +274,9 @@ void writeToFile(){ //all new stuff really hacky. dunno if i want it
     file.close();
     file = fstream("maps", ios::app);
     if(writeNewLine){
-        file << "\n" << objects.size() << endl;
+        file << endl;
     }
-    else{
-        file << objects.size() << endl;
-    }
+    file << objects.size() << endl;
     for(int i = 0; i < objects.size(); i++){
         file << objects[i].type << " ";
         file << objects[i].actualpos.x << " " << objects[i].actualpos.y << " ";
