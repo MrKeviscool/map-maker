@@ -219,7 +219,10 @@ sf::RectangleShape getCursorShape(){
             rectbuffer.setFillColor(sf::Color::Green);
             break;
         case SPIKES:
-            rectbuffer.setSize(spikesize);
+            if(rotatefloors)
+                rectbuffer.setSize(sf::Vector2f(spikesize.y, spikesize.x));
+            else
+                rectbuffer.setSize(spikesize);
             rectbuffer.setFillColor(sf::Color::Magenta);
             break;
         default:
@@ -324,7 +327,7 @@ void resizeObj(){
     if(movebuff < SNAPSIZE){
         return;
     }
-    if(obj == &floorsize && rotatefloors){
+    if(obj == &floorsize && rotatefloors || obj == &spikesize && rotatefloors){
         rotateNumsinVec2f(obj);
     }
     switch(buttclicked){
@@ -350,7 +353,7 @@ void resizeObj(){
         break;
     };
     movebuff = 0;
-    if(obj == &floorsize && rotatefloors){
+    if(obj == &floorsize && rotatefloors || obj == &spikesize && rotatefloors){
         rotateNumsinVec2f(obj);
     }
 }
