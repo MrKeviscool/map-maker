@@ -267,12 +267,12 @@ float roundToX(float num, float roundto){
 
 void writeToFile(){
     fstream file("maps", ios::app);
-    file << objects.size() << endl;
+    file << objects.size() << '\n';
     for(int i = 0; i < objects.size(); i++){
         file << objects[i].type << " ";
         file << objects[i].actualpos.x << " " << objects[i].actualpos.y << " ";
         file << objects[i].shape.getSize().x << " " << objects[i].shape.getSize().y << " ";
-        file << endl;
+        file << '\n';
     }
 }
 
