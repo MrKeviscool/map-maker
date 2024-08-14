@@ -20,14 +20,15 @@ int timesPressed = 0;
 
 
 void manageEvents(sf::Event &event, sf::RenderWindow &window){
-    if(event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
-        window.close();
-        return;
-    }
+
     while(window.pollEvent(event)){
+        if(event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
+            window.close();
+            return;
+        }
         if(event.type == sf::Event::KeyReleased){
             int num = event.key.code - 27; //get the actual nunber
-            if(num < 0 || num > 4) //if its not in range, move on
+            if(num < 0 || num > 3) //if its not in range, move on
                 continue;
                 
             if(num != numButtonDown) //if its diffrent to what was currently pressed...
@@ -43,8 +44,7 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
 }
 
 Object getCursorObj(){
-
-    // return (Object((sf::Vector2f) sf::Mouse::getPosition(), objType(numButtonDown)));
+    return(Object((sf::Vector2f)sf::Mouse::getPosition(), bindings[numButtonDown][timesPressed-1]));
 }
 
 void lockFrames(){
@@ -76,14 +76,14 @@ void display(sf::RenderWindow &window){
 int main(){
     for(int i = 0; i < typesAmount; i++)
         sizes[i] = defaultSizes[i];
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker"/*, sf::Style::Fullscreen*/);
     // objects.push_back(Object(sf::Vector2f(100, 100), objType::floor));
     while(window.isOpen()){
-        display(window);
         sf::Event event;
         manageEvents(event, window);
+        display(window);
         lockFrames();
     }
 
-    return 0;
+    return 0; 
 }
