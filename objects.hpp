@@ -1,5 +1,7 @@
 #include <SFML/Graphics.hpp>
 
+const int typesAmount = 7;
+
 enum class objType{
     floor,
     player,
@@ -9,8 +11,6 @@ enum class objType{
     shootEnemy,
     chaseShootEnemy
 };
-
-const int typesAmount = 7;
 
 
 const sf::Vector2f defaultSizes[] = {
@@ -53,4 +53,9 @@ class Object{
         shape.setPosition(pos);
         shape.setFillColor(colors[int(type)]);
     }
+};
+
+struct Input{
+    int numDown = 0;
+    int timesPressed = 0;
 };

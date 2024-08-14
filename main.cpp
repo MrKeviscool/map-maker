@@ -15,10 +15,9 @@ const int MAXFPS = 60, WIDTH=1920, HEIGHT=1080, SNAPSIZE = 30;
 
 vector<Object> objects;
 
-int numButtonDown = 0;
-int timesPressed = 0;
+Input input;
 
-int roundToSnap(float num){
+inline int roundToSnap(float num){
     return int(num/SNAPSIZE)*30;
 }
 
@@ -34,19 +33,19 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
             if(num < 0 || num > 3) //if its not in range, move on
                 continue;
                 
-            if(num != numButtonDown) //if its diffrent to what was currently pressed...
-                timesPressed=0; //then set the amount of times it was previously pressed to 0
-            timesPressed++; //add one because you clicked it once
-            numButtonDown = num; //set the number you clicked to the num you clicked
-            if(bindings[numButtonDown].size() < timesPressed)
-                timesPressed = 1;
+            if(num != input.numDown) //if its diffrent to what was currently pressed...
+                input.timesPressed=0; //then set the amount of times it was previously pressed to 0
+            input.timesPressed++; //add one because you clicked it once
+            input.numDown = num; //set the number you clicked to the num you clicked
+            if(bindings[input.numDown].size() < input.timesPressed)
+                input.timesPressed = 1;
         }
         continue;
     }
 }
 
 Object getCursorObj(){
-    return(Object(sf::Vector2f(roundToSnap(sf::Mouse::getPosition().x), roundToSnap(sf::Mouse::getPosition().y)), bindings[numButtonDown][timesPressed-1]));
+    return(Object(sf::Vector2f(roundToSnap(sf::Mouse::getPosition().x), roundToSnap(sf::Mouse::getPosition().y)), bindings[input.numDown][input.timesPressed-1]));
 }
 
 void lockFrames(){
