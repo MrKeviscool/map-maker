@@ -38,7 +38,6 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
             if(bindings[numButtonDown].size() < timesPressed)
                 timesPressed = 1;
         }
-        std::cout << "key pressed: " << numButtonDown << " " << timesPressed << " times\n";
         continue;
     }
 }
