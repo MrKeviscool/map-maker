@@ -11,13 +11,16 @@
 
 using namespace std;
 
-const int MAXFPS = 60, WIDTH=1920, HEIGHT=1080;
+const int MAXFPS = 60, WIDTH=1920, HEIGHT=1080, SNAPSIZE = 30;
 
 vector<Object> objects;
 
 int numButtonDown = 0;
 int timesPressed = 0;
 
+int roundToSnap(float num){
+    return int(num/SNAPSIZE)*30;
+}
 
 void manageEvents(sf::Event &event, sf::RenderWindow &window){
 
@@ -43,7 +46,7 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
 }
 
 Object getCursorObj(){
-    return(Object((sf::Vector2f)sf::Mouse::getPosition(), bindings[numButtonDown][timesPressed-1]));
+    return(Object(sf::Vector2f(roundToSnap(sf::Mouse::getPosition().x), roundToSnap(sf::Mouse::getPosition().y)), bindings[numButtonDown][timesPressed-1]));
 }
 
 void lockFrames(){
@@ -76,7 +79,6 @@ int main(){
     for(int i = 0; i < typesAmount; i++)
         sizes[i] = defaultSizes[i];
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker"/*, sf::Style::Fullscreen*/);
-    // objects.push_back(Object(sf::Vector2f(100, 100), objType::floor));
     while(window.isOpen()){
         sf::Event event;
         manageEvents(event, window);
