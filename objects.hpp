@@ -1,6 +1,4 @@
 #include <SFML/Graphics.hpp>
-#include <array>
-
 enum class objType{
     floor,
     player,
@@ -22,7 +20,7 @@ const sf::Vector2f defaultSizes[] = {
     sf::Vector2f(150, 30), //spikes
     sf::Vector2f(60, 90), //shootEnemy
     sf::Vector2f(60, 90), //chaseShootEnemy
-    };
+};
 
 
 const sf::Color colors[] = {
@@ -35,6 +33,22 @@ const sf::Color colors[] = {
     sf::Color::Yellow, //shootChaseEnemy
 };
 
+// const std::tuple<int, int> bindings[] = { //<number key, click times>
+//     std::tuple(0, 1), //floor
+//     std::tuple(2, 1), //player
+//     std::tuple(3, 1), //chaseEnemy
+//     std::tuple(4, 1), //end
+//     std::tuple(3, 2), //spikes
+//     std::tuple(3, 3), //shootEnemy
+//     std::tuple(3, 4), //chaseShootEnemy
+// };
+
+std::vector<std::vector<objType>> bindings = {
+    {objType::floor}, //0 key
+    {objType::player}, //1
+    {objType::chaseEnemy, objType::spikes, objType::shootEnemy, objType::chaseShootEnemy}, //2
+    {objType::end},
+};
 
 sf::Vector2f sizes[typesAmount];
 
@@ -42,12 +56,12 @@ class Object{
     public:
     sf::RectangleShape shape;
     const objType type;
+    Object();
     Object(sf::Vector2f pos, objType type) : type(type){
         shape = sf::RectangleShape(sizes[int(type)]);
         shape.setPosition(pos);
         shape.setFillColor(colors[int(type)]);
     }
-
 };
 
 // class Object{
