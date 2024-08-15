@@ -47,6 +47,7 @@ class Object{
     public:
     sf::RectangleShape shape;
     const objType type;
+    sf::Vector2f actualPos;
     Object();
     Object(sf::Vector2f pos, objType type) : type(type){
         shape = sf::RectangleShape(sizes[int(type)]);
@@ -58,4 +59,6 @@ class Object{
 struct Input{
     int numDown = 0;
     int timesPressed = 0;
+    bool mouseReleased = false;
+    sf::Vector2i screenPos = sf::Vector2i(0, 0);
 };

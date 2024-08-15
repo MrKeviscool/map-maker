@@ -18,7 +18,22 @@ vector<Object> objects;
 Input input;
 
 inline int roundToSnap(float num){
-    return int(num/SNAPSIZE)*30;
+    return round(num/SNAPSIZE)*SNAPSIZE;
+}
+
+void moveObjects(){
+    const int MOVESPEED = 20;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+        input.screenPos.x -= MOVESPEED;
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        input.screenPos.x += MOVESPEED;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+        input.screenPos.y -= MOVESPEED;
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        input.screenPos.y += MOVESPEED;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        for(auto &obj : objects)
+            obj.shape.setPosition(obj.actualPos - sf::Vector2f(roundToSnap(input.screenPos.x), roundToSnap(input.screenPos.y)));
 }
 
 void manageEvents(sf::Event &event, sf::RenderWindow &window){
@@ -39,9 +54,15 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
             input.numDown = num; //set the number you clicked to the num you clicked
             if(bindings[input.numDown].size() < input.timesPressed)
                 input.timesPressed = 1;
+            continue;
         }
-        continue;
+        if(event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left){
+            input.mouseReleased = true;
+            continue;
+        }
     }
+
+    moveObjects();
 }
 
 Object getCursorObj(){
@@ -77,12 +98,18 @@ void display(sf::RenderWindow &window){
 int main(){
     for(int i = 0; i < typesAmount; i++)
         sizes[i] = defaultSizes[i];
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker"/*, sf::Style::Fullscreen*/);
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
     while(window.isOpen()){
         sf::Event event;
         manageEvents(event, window);
         display(window);
         lockFrames();
+        if(input.mouseReleased){
+            objects.push_back(getCursorObj());
+            objects.back().actualPos.x = roundToSnap(objects.back().shape.getPosition().x +  (float)input.screenPos.x);
+            objects.back().actualPos.y = roundToSnap(objects.back().shape.getPosition().y +  (float)input.screenPos.y);
+            input.mouseReleased = false;
+        }
     }
 
     return 0; 
