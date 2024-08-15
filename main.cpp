@@ -21,6 +21,10 @@ inline int roundToSnap(float num){
     return round(num/SNAPSIZE)*SNAPSIZE;
 }
 
+inline objType curObjType(){
+    return bindings[input.numDown][input.timesPressed-1];
+}
+
 void moveObjects(){
     const int MOVESPEED = 20;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
@@ -34,6 +38,18 @@ void moveObjects(){
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
         for(auto &obj : objects)
             obj.shape.setPosition(obj.actualPos - sf::Vector2f(roundToSnap(input.screenPos.x), roundToSnap(input.screenPos.y)));
+}
+
+void resizeObjects(){
+    sf::Vector2f &curSize = sizes[int(curObjType())];
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::J) && curSize.x > SNAPSIZE)
+        curSize.x -= SNAPSIZE;
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::L))
+        curSize.x += SNAPSIZE;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::I) && curSize.y > SNAPSIZE)
+        curSize.y -= SNAPSIZE;
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::K))
+        curSize.y += SNAPSIZE;
 }
 
 void manageEvents(sf::Event &event, sf::RenderWindow &window){
@@ -61,12 +77,12 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
             continue;
         }
     }
-
     moveObjects();
+    resizeObjects();
 }
 
 Object getCursorObj(){
-    return(Object(sf::Vector2f(roundToSnap(sf::Mouse::getPosition().x), roundToSnap(sf::Mouse::getPosition().y)), bindings[input.numDown][input.timesPressed-1]));
+    return(Object(sf::Vector2f(roundToSnap(sf::Mouse::getPosition().x), roundToSnap(sf::Mouse::getPosition().y)), curObjType()));
 }
 
 void placeObj(){
