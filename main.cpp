@@ -69,6 +69,13 @@ Object getCursorObj(){
     return(Object(sf::Vector2f(roundToSnap(sf::Mouse::getPosition().x), roundToSnap(sf::Mouse::getPosition().y)), bindings[input.numDown][input.timesPressed-1]));
 }
 
+void placeObj(){
+    objects.push_back(getCursorObj());
+    objects.back().actualPos.x = roundToSnap(objects.back().shape.getPosition().x +  (float)input.screenPos.x);
+    objects.back().actualPos.y = roundToSnap(objects.back().shape.getPosition().y +  (float)input.screenPos.y);
+    input.mouseReleased = false;
+}
+
 void lockFrames(){
     constexpr int MAXMICRO = (1000/(float)MAXFPS)*1000;
     static STEADY_CLOCK::time_point tp;
@@ -104,12 +111,8 @@ int main(){
         manageEvents(event, window);
         display(window);
         lockFrames();
-        if(input.mouseReleased){
-            objects.push_back(getCursorObj());
-            objects.back().actualPos.x = roundToSnap(objects.back().shape.getPosition().x +  (float)input.screenPos.x);
-            objects.back().actualPos.y = roundToSnap(objects.back().shape.getPosition().y +  (float)input.screenPos.y);
-            input.mouseReleased = false;
-        }
+        if(input.mouseReleased)
+            placeObj();
     }
 
     return 0; 
