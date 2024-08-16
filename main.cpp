@@ -13,8 +13,11 @@ using namespace std;
 const int MAXFPS = 60, WIDTH=1920, HEIGHT=1080, SNAPSIZE = 30;
 
 vector<Object> objects;
+vector<Object> undoBuffer;
 
 Input input;
+
+bool playerPLaced = false, endPlaced = false;
 
 inline int roundToSnap(float num){
     return round(num/SNAPSIZE)*SNAPSIZE;
@@ -22,6 +25,14 @@ inline int roundToSnap(float num){
 
 inline objType curObjType(){
     return bindings[input.numDown][input.timesPressed-1];
+}
+
+void undo(){
+
+}
+
+void redo(){
+
 }
 
 void moveObjects(){
@@ -97,10 +108,17 @@ Object getCursorObj(){
 }
 
 void placeObj(){
-    objects.push_back(getCursorObj());
-    objects.back().actualPos.x = roundToSnap(objects.back().shape.getPosition().x +  (float)input.screenPos.x);
-    objects.back().actualPos.y = roundToSnap(objects.back().shape.getPosition().y +  (float)input.screenPos.y);
+    Object cursorObj = getCursorObj();
+    if(cursorObj.type == objType::player && playerPLaced|| cursorObj.type == objType::end && endPlaced)
+        return;
+    objects.push_back(cursorObj);
+    cursorObj.actualPos.x = roundToSnap(objects.back().shape.getPosition().x +  (float)input.screenPos.x);
+    cursorObj.actualPos.y = roundToSnap(objects.back().shape.getPosition().y +  (float)input.screenPos.y);
     input.mouseReleased = false;
+    if(cursorObj.type == objType::player)
+        playerPLaced = true;
+    else if(cursorObj.type == objType::end)
+        endPlaced = true;
 }
 
 void lockFrames(){
@@ -133,8 +151,8 @@ int main(){
     for(int i = 0; i < typesAmount; i++)
         sizes[i] = defaultSizes[i];
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
+    sf::Event event;
     while(window.isOpen()){
-        sf::Event event;
         manageEvents(event, window);
         display(window);
         lockFrames();
