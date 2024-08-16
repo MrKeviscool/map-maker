@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 
+inline int roundToSnap(float num);
 const int typesAmount = 7;
 
 enum class objType{
@@ -50,7 +51,7 @@ class Object{
     sf::Vector2f actualPos;
     Object();
     Object(sf::Vector2f pos, objType type) : type(type){
-        shape = sf::RectangleShape(sizes[int(type)]);
+        shape = sf::RectangleShape(sf::Vector2f(roundToSnap(sizes[int(type)].x), roundToSnap(sizes[int(type)].y)));
         shape.setPosition(pos);
         shape.setFillColor(colors[int(type)]);
     }

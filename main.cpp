@@ -41,15 +41,16 @@ void moveObjects(){
 }
 
 void resizeObjects(){
+    const float RESIZESPEED = 5;
     sf::Vector2f &curSize = sizes[int(curObjType())];
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::J) && curSize.x > SNAPSIZE)
-        curSize.x -= SNAPSIZE;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::J) && curSize.x-RESIZESPEED > SNAPSIZE)
+        curSize.x -= RESIZESPEED;
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::L))
-        curSize.x += SNAPSIZE;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::I) && curSize.y > SNAPSIZE)
-        curSize.y -= SNAPSIZE;
+        curSize.x += RESIZESPEED;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::I) && curSize.y-RESIZESPEED > SNAPSIZE)
+        curSize.y -= RESIZESPEED;
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::K))
-        curSize.y += SNAPSIZE;
+        curSize.y += RESIZESPEED;
 }
 
 void manageEvents(sf::Event &event, sf::RenderWindow &window){
