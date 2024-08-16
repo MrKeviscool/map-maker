@@ -28,11 +28,25 @@ inline objType curObjType(){
 }
 
 void undo(){
-
+    if(objects.size() == 0)
+        return;
+    if(objects.back().type == objType::player)
+        playerPLaced = false;
+    else if(objects.back().type == objType::end)
+        endPlaced = false;
+    undoBuffer.push_back(objects.back());
+    objects.pop_back();
 }
 
 void redo(){
-
+    if(undoBuffer.size() == 0)
+        return;
+    if(undoBuffer.back().type == objType::player && playerPLaced || undoBuffer.back().type == objType::end && endPlaced){
+        undoBuffer.pop_back();
+        return;
+    }
+    objects.push_back(undoBuffer.back());
+    undoBuffer.pop_back();
 }
 
 void moveObjects(){
@@ -82,6 +96,14 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
                 rotateObjects();
                 continue;
             }
+            if(event.key.code == sf::Keyboard::U){
+                undo();
+                continue;
+            }
+            if(event.key.code == sf::Keyboard::Y){
+                redo();
+                continue;
+            }
             int num = event.key.code - 27; //get the actual nunber
             if(num < 0 || num > 3) //if its not in range, move on
                 continue;
@@ -109,8 +131,10 @@ Object getCursorObj(){
 
 void placeObj(){
     Object cursorObj = getCursorObj();
-    if(cursorObj.type == objType::player && playerPLaced|| cursorObj.type == objType::end && endPlaced)
+    if(cursorObj.type == objType::player && playerPLaced|| cursorObj.type == objType::end && endPlaced){
+        input.mouseReleased = false;
         return;
+    }
     objects.push_back(cursorObj);
     cursorObj.actualPos.x = roundToSnap(objects.back().shape.getPosition().x +  (float)input.screenPos.x);
     cursorObj.actualPos.y = roundToSnap(objects.back().shape.getPosition().y +  (float)input.screenPos.y);
@@ -150,7 +174,7 @@ void display(sf::RenderWindow &window){
 int main(){
     for(int i = 0; i < typesAmount; i++)
         sizes[i] = defaultSizes[i];
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker");
     sf::Event event;
     while(window.isOpen()){
         manageEvents(event, window);
