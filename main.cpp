@@ -77,6 +77,16 @@ void resizeObjects(){
         curSize.y += RESIZESPEED;
 }
 
+void rmObject(){
+    for(int i = 0; i < objects.size(); i++){
+        if(sf::Vector2f(roundToSnap(sf::Mouse::getPosition().x), roundToSnap(sf::Mouse::getPosition().y)) == objects[i].shape.getPosition()){
+            undoBuffer.push_back(objects[i]);
+            objects.pop_back();
+            return;
+        }
+    }
+}
+
 void rotateObjects(){
     sf::Vector2f &objsize = sizes[int(curObjType())];
     float temp = objsize.x;
@@ -116,9 +126,14 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
                 input.timesPressed = 1;
             continue;
         }
-        if(event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left){
-            input.mouseReleased = true;
-            continue;
+        if(event.type == sf::Event::MouseButtonReleased){
+            if(event.mouseButton.button == sf::Mouse::Left){
+                input.mouseReleased = true;
+                continue;
+            }
+            else if(event.mouseButton.button == sf::Mouse::Right){
+                rmObject();
+            }
         }
     }
     moveObjects();
