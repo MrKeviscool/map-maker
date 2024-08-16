@@ -1,7 +1,8 @@
 #include <SFML/Graphics.hpp>
+#include <array>
 
-inline int roundToSnap(float num);
 const int typesAmount = 7;
+inline int roundToSnap(float num);
 
 enum class objType{
     floor,
@@ -12,7 +13,6 @@ enum class objType{
     shootEnemy,
     chaseShootEnemy
 };
-
 
 const sf::Vector2f defaultSizes[] = {
     sf::Vector2f(300, 30), //floor
@@ -61,5 +61,7 @@ struct Input{
     int numDown = 0;
     int timesPressed = 0;
     bool mouseReleased = false;
+    bool objectRotated = false;
     sf::Vector2i screenPos = sf::Vector2i(0, 0);
+    std::vector<bool> keyStatus;
 };

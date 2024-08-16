@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <array>
 #include <thread>
 #include <chrono>
 #include <cmath>
@@ -53,6 +52,13 @@ void resizeObjects(){
         curSize.y += RESIZESPEED;
 }
 
+void rotateObjects(){
+    sf::Vector2f &objsize = sizes[int(curObjType())];
+    float temp = objsize.x;
+    objsize.x = objsize.y;
+    objsize.y = temp;
+}
+
 void manageEvents(sf::Event &event, sf::RenderWindow &window){
 
     while(window.pollEvent(event)){
@@ -61,6 +67,10 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
             return;
         }
         if(event.type == sf::Event::KeyReleased){
+            if(event.key.code == sf::Keyboard::R){
+                rotateObjects();
+                continue;
+            }
             int num = event.key.code - 27; //get the actual nunber
             if(num < 0 || num > 3) //if its not in range, move on
                 continue;
