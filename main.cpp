@@ -61,6 +61,17 @@ void redo(){
     undoBuffer.pop_back();
 }
 
+void writeToFile(){
+    ofstream file("maps", ios::app);
+    file << objects.size() << '\n';
+    for(auto obj = objects.begin(); obj != objects.end(); obj++){
+        file << (int)obj->type << " ";
+        file << obj->actualPos.x << " " << obj->actualPos.y << " ";
+        file << obj->shape.getSize().x << " " << obj->shape.getSize().y << " ";
+        file << '\n';
+    }
+}
+
 void moveObjects(){
     const int MOVESPEED = 20;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
@@ -129,6 +140,9 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
             if(event.key.code == sf::Keyboard::X){
                 reset();
                 continue;
+            }
+            if(event.key.code == sf::Keyboard::F){
+                writeToFile();
             }
             int num = event.key.code - 27; //get the actual nunber
             if(num < 0 || num > 3) //if its not in range, move on
