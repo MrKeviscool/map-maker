@@ -10,7 +10,7 @@
 
 using namespace std;
 
-const int MAXFPS = 60, WIDTH=1920, HEIGHT=1080, SNAPSIZE = 30;
+const int MAXFPS = 60, SNAPSIZE = 30;
 
 vector<Object> objects;
 vector<Object> undoBuffer;
@@ -18,6 +18,7 @@ vector<Object> undoBuffer;
 Input input;
 
 bool playerPLaced = false, endPlaced = false;
+bool displaySavedText = false;
 
 inline int roundToSnap(float num){
     return round(num/SNAPSIZE)*SNAPSIZE;
@@ -70,6 +71,7 @@ void writeToFile(){
         file << obj->shape.getSize().x << " " << obj->shape.getSize().y << " ";
         file << '\n';
     }
+    displaySavedText = true;
 }
 
 void moveObjects(){
@@ -208,18 +210,34 @@ void lockFrames(){
     }
 }
 
+void drawText(sf::RenderWindow &window){
+    static Text text;
+    if(!text.loadedFont)
+        return;
+    if(displaySavedText){
+        text.savedText.setFillColor(sf::Color(255, 255, 255, 255));
+        displaySavedText = false;
+    }
+    if(text.savedText.getFillColor().a > 0){
+        window.draw(text.savedText);
+        text.savedText.setFillColor(sf::Color(255, 255, 255, text.savedText.getFillColor().a-1));
+    }
+    window.draw(text.helpText);
+}
+
 void display(sf::RenderWindow &window){
     window.clear();
     for(auto &obj : objects)
         window.draw(obj.shape);
     window.draw(getCursorObj(window).shape);
+    drawText(window);
     window.display();
 }
 
 int main(){
     for(int i = 0; i < typesAmount; i++)
         sizes[i] = defaultSizes[i];
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker");
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
     sf::Event event;
     while(window.isOpen()){
         manageEvents(event, window);

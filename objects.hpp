@@ -1,7 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <array>
 
-const int typesAmount = 7;
+const int typesAmount = 7, WIDTH=1920, HEIGHT=1080;
 inline int roundToSnap(float num);
 
 enum class objType{
@@ -59,7 +59,29 @@ class Object{
 
 struct Input{
     int numDown = 0;
-    int timesPressed = 0;
+    int timesPressed = 1;
     bool mouseReleased = false;
     sf::Vector2i screenPos = sf::Vector2i(0, 0);
+};
+
+struct Text{
+    sf::Font font;
+    bool loadedFont;
+    // vector<sf::Text> texts = {sf::Text("Saved File...", font)};
+    sf::Text savedText = sf::Text("File Saved...", font);
+    sf::Text helpText = sf::Text("W, S, A, D - move\nI, K, J, L - re-size\n1-4 - select-type\nR - rotate floor\nF - save to file\nX - clear\nhint: there can be\nmultiple types on one key", font);
+    Text(){
+        if(!font.loadFromFile("font.ttf")){
+            loadedFont = false;
+            std::cout << "Error loading font.ttf, no text will be displayed\n";
+        }
+        else{
+            loadedFont = true;
+            savedText.setFillColor(sf::Color(255, 255, 255, 0));
+            savedText.setPosition(0, 0);
+            savedText.setCharacterSize(40);
+            helpText.setCharacterSize(30);
+            helpText.setPosition(5, HEIGHT-(helpText.getCharacterSize()*9));
+        }
+    }
 };
