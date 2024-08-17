@@ -38,6 +38,18 @@ void undo(){
     objects.pop_back();
 }
 
+void reset(){
+    objects.clear();
+    undoBuffer.clear();
+    playerPLaced = false;
+    endPlaced = false;
+    input.numDown = 0;
+    input.timesPressed = 1;
+    input.screenPos = sf::Vector2i(0, 0);
+    for(int i = 0; i < typesAmount; i++) //could use std::copy however this is fine
+        sizes[i] = defaultSizes[i];
+}
+
 void redo(){
     if(undoBuffer.size() == 0)
         return;
@@ -112,6 +124,10 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
             }
             if(event.key.code == sf::Keyboard::Y){
                 redo();
+                continue;
+            }
+            if(event.key.code == sf::Keyboard::X){
+                reset();
                 continue;
             }
             int num = event.key.code - 27; //get the actual nunber
