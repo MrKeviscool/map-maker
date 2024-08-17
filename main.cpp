@@ -10,232 +10,190 @@
 
 using namespace std;
 
-const int MAXFPS = 60, WIDTH = 1920, HEIGHT = 1080;
-const float MOVESPEED = (WIDTH/MAXFPS)/1.5, RESIZESPEED = 5, SNAPSIZE = 30;
+const int MAXFPS = 60, SNAPSIZE = 30;
 
-void inputevents(sf::Event *event, bool freemem), display(), lockFrames(), placeObject(), moveScreen(), writeToFile(), resizeObj(), rotateNumsinVec2f(sf::Vector2f *vec), rotateFloor(), undo(), redo(), resetMap(), rmObj();
-float roundToX(float num, float roundto);
-sf::RectangleShape getCursorShape();
+vector<Object> objects;
+vector<Object> undoBuffer;
 
-sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
+Input input;
 
-sf::Font font;
-int amountoftexts = 0;
+bool playerPLaced = false, endPlaced = false;
+bool displaySavedText = false;
 
-bool drawText = false;
-sf::Text *texts;
-sf::Event event;
-int activeobj = FLOOR;
-
-vector<mapobj> objects;
-vector<mapobj> redobuffer;
-sf::Vector2f screenpos(0, 0);
-
-bool rotatefloors = false;
-bool playerplaced = false, endplaced=false;
-float xmovesnapbuffer = 0, ymovesnapbuffer = 0;
-
-int main(){
-
-    if(font.loadFromFile("font.ttf")){
-        drawText = true;
-        const int charsize = 10;
-        static sf::Text txt[] = {
-            sf::Text("W, S, A, D - move", font),
-            sf::Text("I, K, J, L - re-size", font),
-            sf::Text("1-4 - select-type", font),
-            sf::Text("R - rotate floor", font),
-            sf::Text("F - save to file", font),
-            sf::Text("X - clear", font),
-        };
-        const int upfrombot = 30;
-        amountoftexts = sizeof(txt)/sizeof(sf::Text);
-        for(int i = 0; i < amountoftexts; i++){
-            txt[i].setPosition(1680, 1070-((amountoftexts-i)*upfrombot));
-        }
-        texts = txt;
-    }
-    else{
-        cout << "cant load font file\n";
-    }
-
-    while(window.isOpen()){
-        inputevents(&event, false);
-        moveScreen();
-        display();
-        lockFrames();
-    }
-    // writeToFile();
-    inputevents(nullptr, true);
-    return 0;
+inline int roundToSnap(float num){
+    return round(num/SNAPSIZE)*SNAPSIZE;
 }
 
-void inputevents(sf::Event *event, bool freemem){
-    
-    static void (*frotate)() = []() -> void{rotatefloors = !rotatefloors;};
+inline objType curObjType(){
+    return bindings[input.numDown][input.timesPressed-1];
+}
 
-    static void (*changenemy)() = []() -> void{
-        if(activeobj==ENEMEY){
-            activeobj = SPIKES;
-        }
-        else if(activeobj == SPIKES){
-            activeobj == ENEMEY;
-        }
-        else{
-            activeobj = ENEMEY;
-        }
-    };
-    
-    static void (*funcptrs[])() = {frotate, undo, redo, resetMap, writeToFile, changenemy};
-    static sf::Keyboard::Key keymap[] = {sf::Keyboard::Key::R, sf::Keyboard::Key::U, sf::Keyboard::Key::Y, sf::Keyboard::Key::X, sf::Keyboard::F, sf::Keyboard::Num3};
-    static bool leftMouseDownLastFrame = false, rightMouseDownLastFrame = false;
-    static bool *downlastframe = (bool *)calloc(sizeof(keymap) / sizeof(sf::Keyboard::Key), sizeof(bool));
-    
-    if(freemem){
-        free(downlastframe);
+void undo(){
+    if(objects.size() == 0)
+        return;
+    if(objects.back().type == objType::player)
+        playerPLaced = false;
+    else if(objects.back().type == objType::end)
+        endPlaced = false;
+    undoBuffer.push_back(objects.back());
+    objects.pop_back();
+}
+
+void reset(){
+    objects.clear();
+    undoBuffer.clear();
+    playerPLaced = false;
+    endPlaced = false;
+    input.numDown = 0;
+    input.timesPressed = 1;
+    input.screenPos = sf::Vector2i(0, 0);
+    for(int i = 0; i < typesAmount; i++) //could use std::copy however this is fine
+        sizes[i] = defaultSizes[i];
+}
+
+void redo(){
+    if(undoBuffer.size() == 0)
+        return;
+    if(undoBuffer.back().type == objType::player && playerPLaced || undoBuffer.back().type == objType::end && endPlaced){
+        undoBuffer.pop_back();
         return;
     }
+    objects.push_back(undoBuffer.back());
+    undoBuffer.pop_back();
+}
 
-    while(window.pollEvent(*event)){
-        if(event->type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
+void writeToFile(){
+    ofstream file("maps", ios::app);
+    file << objects.size() << '\n';
+    for(auto obj = objects.begin(); obj != objects.end(); obj++){
+        file << (int)obj->type << " ";
+        file << obj->actualPos.x << " " << obj->actualPos.y << " ";
+        file << obj->shape.getSize().x << " " << obj->shape.getSize().y << " ";
+        file << '\n';
+    }
+    displaySavedText = true;
+}
+
+void moveObjects(){
+    const int MOVESPEED = 20;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+        input.screenPos.x -= MOVESPEED;
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        input.screenPos.x += MOVESPEED;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+        input.screenPos.y -= MOVESPEED;
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        input.screenPos.y += MOVESPEED;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        for(auto &obj : objects)
+            obj.shape.setPosition(obj.actualPos - sf::Vector2f(roundToSnap(input.screenPos.x), roundToSnap(input.screenPos.y)));
+}
+
+void resizeObjects(){
+    const float RESIZESPEED = 5;
+    sf::Vector2f &curSize = sizes[int(curObjType())];
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::J) && curSize.x-RESIZESPEED > SNAPSIZE)
+        curSize.x -= RESIZESPEED;
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::L))
+        curSize.x += RESIZESPEED;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::I) && curSize.y-RESIZESPEED > SNAPSIZE)
+        curSize.y -= RESIZESPEED;
+    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::K))
+        curSize.y += RESIZESPEED;
+}
+
+void rmObject(){
+    for(int i = 0; i < objects.size(); i++){
+        if(sf::Vector2f(roundToSnap(sf::Mouse::getPosition().x), roundToSnap(sf::Mouse::getPosition().y)) == objects[i].shape.getPosition()){
+            undoBuffer.push_back(objects[i]);
+            objects.pop_back();
+            return;
+        }
+    }
+}
+
+void rotateObjects(){
+    sf::Vector2f &objsize = sizes[int(curObjType())];
+    float temp = objsize.x;
+    objsize.x = objsize.y;
+    objsize.y = temp;
+}
+
+void manageEvents(sf::Event &event, sf::RenderWindow &window){
+
+    while(window.pollEvent(event)){
+        if(event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
             window.close();
             return;
         }
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
-            activeobj = FLOOR;
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
-            activeobj = PLAYER;
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
-            activeobj = END;  
-        
-        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
-            leftMouseDownLastFrame = true;
+        if(event.type == sf::Event::KeyReleased){
+            if(event.key.code == sf::Keyboard::R){
+                rotateObjects();
+                continue;
+            }
+            if(event.key.code == sf::Keyboard::U){
+                undo();
+                continue;
+            }
+            if(event.key.code == sf::Keyboard::Y){
+                redo();
+                continue;
+            }
+            if(event.key.code == sf::Keyboard::X){
+                reset();
+                continue;
+            }
+            if(event.key.code == sf::Keyboard::F){
+                writeToFile();
+            }
+            int num = event.key.code - 27; //get the actual nunber
+            if(num < 0 || num > 3) //if its not in range, move on
+                continue;
+                
+            if(num != input.numDown) //if its diffrent to what was currently pressed...
+                input.timesPressed=0; //then set the amount of times it was previously pressed to 0
+            input.timesPressed++; //add one because you clicked it once
+            input.numDown = num; //set the number you clicked to the num you clicked
+            if(bindings[input.numDown].size() < input.timesPressed)
+                input.timesPressed = 1;
+            continue;
         }
-        else if(leftMouseDownLastFrame){
-            leftMouseDownLastFrame = false;
-            placeObject();
-        }
-        if(sf::Mouse::isButtonPressed(sf::Mouse::Right)){
-            rightMouseDownLastFrame = true;
-        }
-        else if(rightMouseDownLastFrame){
-            rightMouseDownLastFrame = false;
-            rmObj();
+        if(event.type == sf::Event::MouseButtonReleased){
+            if(event.mouseButton.button == sf::Mouse::Left){
+                input.mouseReleased = true;
+                continue;
+            }
+            else if(event.mouseButton.button == sf::Mouse::Right){
+                rmObject();
+            }
         }
     }
-
-    for(int i = 0; i < sizeof(keymap) / sizeof(sf::Keyboard::Key); i++){
-        if(sf::Keyboard::isKeyPressed(keymap[i])){
-            downlastframe[i] = true;
-        }
-        else if(downlastframe[i]){
-            downlastframe[i] = false;
-            (*funcptrs[i])();
-        }
-    }
-
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
-        xmovesnapbuffer += MOVESPEED;
-        if(xmovesnapbuffer > SNAPSIZE){
-            screenpos.x += roundToX(xmovesnapbuffer, SNAPSIZE);
-            xmovesnapbuffer = 0;
-        }
-    }
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
-        xmovesnapbuffer += MOVESPEED;
-        if(xmovesnapbuffer > SNAPSIZE){
-            screenpos.x -= roundToX(xmovesnapbuffer, SNAPSIZE);
-            xmovesnapbuffer = 0;
-        }
-
-    }
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
-        ymovesnapbuffer += MOVESPEED;
-        if(ymovesnapbuffer > SNAPSIZE){
-            screenpos.y -= roundToX(ymovesnapbuffer, SNAPSIZE);
-            ymovesnapbuffer = 0;
-        }
-
-    }
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
-        ymovesnapbuffer += MOVESPEED;
-        if(ymovesnapbuffer > SNAPSIZE){
-            screenpos.y += roundToX(ymovesnapbuffer, SNAPSIZE);
-            ymovesnapbuffer = 0;
-        }
-
-    }
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::J) || 
-    sf::Keyboard::isKeyPressed(sf::Keyboard::K) ||
-    sf::Keyboard::isKeyPressed(sf::Keyboard::L) ||
-    sf::Keyboard::isKeyPressed(sf::Keyboard::I)){
-        resizeObj();
-    }
+    moveObjects();
+    resizeObjects();
 }
 
-void display(){
-    sf::RectangleShape cursorshape = getCursorShape();
-    window.clear();
-    for(int i = 0; i < objects.size(); i++){
-        window.draw(objects[i].shape);
-    }
-    window.draw(cursorshape);
-    if(drawText){
-        for(int i = 0; i < amountoftexts; i++){
-            window.draw(texts[i]);
-        }
-    }
-    window.display();
+Object getCursorObj(const sf::RenderWindow &window){
+    return(Object(sf::Vector2f(roundToSnap(sf::Mouse::getPosition(window).x), roundToSnap(sf::Mouse::getPosition(window).y)), curObjType()));
 }
 
-sf::RectangleShape getCursorShape(){
-    sf::RectangleShape rectbuffer;
-    switch(activeobj){
-        case FLOOR:
-            if(rotatefloors){
-                rectbuffer.setSize(sf::Vector2f(floorsize.y, floorsize.x));
-                break;
-            }
-            rectbuffer.setSize(floorsize);
-            break;
-        case PLAYER:
-            if(playerplaced){
-                activeobj = FLOOR;
-                break;
-            }
-            rectbuffer.setSize(playersize);
-            rectbuffer.setFillColor(sf::Color::Blue);
-            break;
-        case ENEMEY:
-            rectbuffer.setSize(enemeysize);
-            rectbuffer.setFillColor(sf::Color::Red);
-            break;
-        case END:
-            if(endplaced){
-                activeobj = FLOOR;
-                break;
-            }
-            rectbuffer.setSize(endsize);
-            rectbuffer.setFillColor(sf::Color::Green);
-            break;
-        case SPIKES:
-            if(rotatefloors)
-                rectbuffer.setSize(sf::Vector2f(spikesize.y, spikesize.x));
-            else
-                rectbuffer.setSize(spikesize);
-            rectbuffer.setFillColor(sf::Color::Magenta);
-            break;
-        default:
-            rectbuffer.setSize(sf::Vector2f(300, 30));
-    };
-    rectbuffer.setPosition(
-        roundToX(sf::Mouse::getPosition().x, SNAPSIZE), 
-        roundToX(sf::Mouse::getPosition().y, SNAPSIZE));
-    return rectbuffer;
+void placeObj(const sf::RenderWindow &window){
+    Object cursorObj = getCursorObj(window);
+    if(cursorObj.type == objType::player && playerPLaced|| cursorObj.type == objType::end && endPlaced){
+        input.mouseReleased = false;
+        return;
+    }
+    cursorObj.actualPos.x = roundToSnap(cursorObj.shape.getPosition().x +  (float)input.screenPos.x);
+    cursorObj.actualPos.y = roundToSnap(cursorObj.shape.getPosition().y +  (float)input.screenPos.y);
+    objects.push_back(cursorObj);
+    input.mouseReleased = false;
+    if(cursorObj.type == objType::player)
+        playerPLaced = true;
+    else if(cursorObj.type == objType::end)
+        endPlaced = true;
 }
 
 void lockFrames(){
-    const int MAXMICRO = (1000/(float)MAXFPS)*1000;
+    constexpr int MAXMICRO = (1000/(float)MAXFPS)*1000;
     static STEADY_CLOCK::time_point tp;
     static bool doneframe = false;
     if(doneframe = false){
@@ -252,169 +210,42 @@ void lockFrames(){
     }
 }
 
-void placeObject(){
-    sf::RectangleShape shape = getCursorShape();
-    objects.push_back(mapobj(shape, shape.getPosition() + sf::Vector2f(roundToX(screenpos.x, SNAPSIZE), roundToX(screenpos.y, SNAPSIZE)), activeobj));
-    if(activeobj == PLAYER)
-        playerplaced = true;
-    else if(activeobj == END)
-        endplaced = true;
-}
-
-float roundToX(float num, float roundto){
-    return round(num/roundto)*roundto;
-}
-
-void writeToFile(){
-    fstream file("maps", ios::app);
-    file << objects.size() << '\n';
-    for(int i = 0; i < objects.size(); i++){
-        file << objects[i].type << " ";
-        file << objects[i].actualpos.x << " " << objects[i].actualpos.y << " ";
-        file << objects[i].shape.getSize().x << " " << objects[i].shape.getSize().y << " ";
-        file << '\n';
-    }
-}
-
-void moveScreen(){
-    for(int i = 0; i < objects.size(); i++){
-        objects[i].shape.setPosition(objects[i].actualpos - screenpos);
-    }
-}
-
-void resizeObj(){
-    static float movebuff = 0;
-    char buttclicked;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::J))
-        buttclicked = 'j';
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::L))
-        buttclicked = 'l';
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::K))
-        buttclicked = 'k';
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::I))
-        buttclicked = 'i';
-    sf::Vector2f *obj;
-    switch(activeobj){
-        case FLOOR:
-            obj = &floorsize;
-            break;
-        case PLAYER:
-            obj = &playersize;
-            break;
-        case ENEMEY:
-            obj = &enemeysize;
-            break;
-        case END:
-            obj = &endsize;
-            break;
-        case SPIKES:
-            obj = &spikesize;
-            break;
-        default:
-            obj = &floorsize;
-    };
-    movebuff += RESIZESPEED;
-    if(movebuff < SNAPSIZE){
+void drawText(sf::RenderWindow &window){
+    static Text text;
+    if(!text.loadedFont)
         return;
+    if(displaySavedText){
+        text.savedText.setFillColor(sf::Color(255, 255, 255, 255));
+        displaySavedText = false;
     }
-    if(obj == &floorsize && rotatefloors || obj == &spikesize && rotatefloors){
-        rotateNumsinVec2f(obj);
+    if(text.savedText.getFillColor().a > 0){
+        window.draw(text.savedText);
+        text.savedText.setFillColor(sf::Color(255, 255, 255, text.savedText.getFillColor().a-1));
     }
-    switch(buttclicked){
-        case 'j':
-            if(obj->x <= 1){
-                obj->x = 1;
-                break;
-            }
-            obj->x -= SNAPSIZE;
-            break;
-        case 'i':
-            if(obj->y <= 1){
-                obj->y = 1;
-                break;
-            }
-            obj->y -= SNAPSIZE;
-            break;
-        case 'l':
-            obj->x += SNAPSIZE;
-            break;
-        case 'k':
-            obj->y += SNAPSIZE;
-        break;
-    };
-    movebuff = 0;
-    if(obj == &floorsize && rotatefloors || obj == &spikesize && rotatefloors){
-        rotateNumsinVec2f(obj);
-    }
+    window.draw(text.helpText);
 }
 
-void rotateNumsinVec2f(sf::Vector2f *vec){
-    float tmp = vec->x;
-    vec->x = vec->y;
-    vec->y = tmp;
+void display(sf::RenderWindow &window){
+    window.clear();
+    for(auto &obj : objects)
+        window.draw(obj.shape);
+    window.draw(getCursorObj(window).shape);
+    drawText(window);
+    window.display();
 }
 
-void undo(){
-    if(objects.size() <= 0){
-        return;
+int main(){
+    for(int i = 0; i < typesAmount; i++)
+        sizes[i] = defaultSizes[i];
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
+    sf::Event event;
+    while(window.isOpen()){
+        manageEvents(event, window);
+        display(window);
+        lockFrames();
+        if(input.mouseReleased)
+            placeObj(window);
     }
-    if(objects.back().type == PLAYER){
-        playerplaced = false;
-    }
-    if(objects.back().type == END){
-        endplaced = false;
-    }
-    redobuffer.push_back(objects.back());
-    objects.pop_back();
-}
-void redo(){
-    if(redobuffer.size() <= 0){
-        return;
-    }
-    if(redobuffer.back().type == PLAYER){
-        if(playerplaced){
-            redobuffer.pop_back();
-            return;
-        }
-        playerplaced = true;
-        activeobj = FLOOR;
-    }
-    if(redobuffer.back().type == END){
-        if(endplaced){
-            redobuffer.pop_back();
-            return;
-        }
-        endplaced = true;
-        activeobj = FLOOR;
-    }
-    
-    objects.push_back(redobuffer.back());
-    redobuffer.pop_back();
-}
 
-void resetMap(){
-    objects.clear();
-    redobuffer.clear();
-    rotatefloors = false;
-    playerplaced = false;
-    endplaced = false;
-    floorsize = defaultfloorsize;
-    playersize = defaultplayersize;
-    enemeysize = defaultenemeysize;
-    endsize = defaultendsize;
-    spikesize = defaultspikesize;
-    screenpos = sf::Vector2f(0, 0);
-}
-
-void rmObj(){
-    sf::Vector2f mouseshape = getCursorShape().getPosition();
-    for(int i = 0; i < objects.size(); i++){
-        if(objects[i].shape.getPosition() == mouseshape){
-            if(objects[i].type == PLAYER){
-                playerplaced = false;
-            }
-            redobuffer.push_back(objects[i]);
-            objects.erase(objects.begin() + i);
-        }
-    }
+    return 0; 
 }

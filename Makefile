@@ -3,7 +3,7 @@ SFML_FLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 target := mapmaker
 
 $(target): main.cpp objects.hpp
-	g++ -o $(target) $< $(SFML_FLAGS)
+	g++ -g -o $(target) $< $(SFML_FLAGS)
 clean:
 	rm $(target)
 	rm ./maps
