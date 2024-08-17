@@ -166,9 +166,9 @@ void placeObj(const sf::RenderWindow &window){
         input.mouseReleased = false;
         return;
     }
+    cursorObj.actualPos.x = roundToSnap(cursorObj.shape.getPosition().x +  (float)input.screenPos.x);
+    cursorObj.actualPos.y = roundToSnap(cursorObj.shape.getPosition().y +  (float)input.screenPos.y);
     objects.push_back(cursorObj);
-    cursorObj.actualPos.x = roundToSnap(objects.back().shape.getPosition().x +  (float)input.screenPos.x);
-    cursorObj.actualPos.y = roundToSnap(objects.back().shape.getPosition().y +  (float)input.screenPos.y);
     input.mouseReleased = false;
     if(cursorObj.type == objType::player)
         playerPLaced = true;
