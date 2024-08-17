@@ -61,7 +61,5 @@ struct Input{
     int numDown = 0;
     int timesPressed = 0;
     bool mouseReleased = false;
-    bool objectRotated = false;
     sf::Vector2i screenPos = sf::Vector2i(0, 0);
-    std::vector<bool> keyStatus;
 };

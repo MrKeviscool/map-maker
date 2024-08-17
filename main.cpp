@@ -140,12 +140,12 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
     resizeObjects();
 }
 
-Object getCursorObj(){
-    return(Object(sf::Vector2f(roundToSnap(sf::Mouse::getPosition().x), roundToSnap(sf::Mouse::getPosition().y)), curObjType()));
+Object getCursorObj(const sf::RenderWindow &window){
+    return(Object(sf::Vector2f(roundToSnap(sf::Mouse::getPosition(window).x), roundToSnap(sf::Mouse::getPosition(window).y)), curObjType()));
 }
 
-void placeObj(){
-    Object cursorObj = getCursorObj();
+void placeObj(const sf::RenderWindow &window){
+    Object cursorObj = getCursorObj(window);
     if(cursorObj.type == objType::player && playerPLaced|| cursorObj.type == objType::end && endPlaced){
         input.mouseReleased = false;
         return;
@@ -182,7 +182,7 @@ void display(sf::RenderWindow &window){
     window.clear();
     for(auto &obj : objects)
         window.draw(obj.shape);
-    window.draw(getCursorObj().shape);
+    window.draw(getCursorObj(window).shape);
     window.display();
 }
 
@@ -196,7 +196,7 @@ int main(){
         display(window);
         lockFrames();
         if(input.mouseReleased)
-            placeObj();
+            placeObj(window);
     }
 
     return 0; 
