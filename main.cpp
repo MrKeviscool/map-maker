@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include <thread>
 #include <chrono>
 #include <cmath>
@@ -101,11 +102,13 @@ void resizeObjects(){
         curSize.y += RESIZESPEED;
 }
 
-void rmObject(){
+void rmObject(sf::RenderWindow &window){
     for(int i = 0; i < objects.size(); i++){
-        if(sf::Vector2f(roundToSnap(sf::Mouse::getPosition().x), roundToSnap(sf::Mouse::getPosition().y)) == objects[i].shape.getPosition()){
-            undoBuffer.push_back(objects[i]);
-            objects.pop_back();
+        if(sf::Vector2f(roundToSnap(sf::Mouse::getPosition(window).x), roundToSnap(sf::Mouse::getPosition(window).y)) == objects[i].shape.getPosition()){
+            Object &backObj = objects[objects.size()-1];
+            new (&objects[i]) Object(backObj.shape.getPosition(), backObj.type); //overwrite that memory with a placement new. vector will free it later anyway
+            objects[i].actualPos = backObj.actualPos;
+            objects.pop_back(); //pop_back works even if class has a constant because it doesent have to move anything
             return;
         }
     }
@@ -163,7 +166,7 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
                 continue;
             }
             else if(event.mouseButton.button == sf::Mouse::Right){
-                rmObject();
+                rmObject(window);
             }
         }
     }
@@ -236,7 +239,7 @@ void display(sf::RenderWindow &window){
 int main(){
     for(int i = 0; i < typesAmount; i++)
         sizes[i] = defaultSizes[i];
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker");
     sf::Event event;
     while(window.isOpen()){
         manageEvents(event, window);

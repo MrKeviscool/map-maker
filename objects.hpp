@@ -1,3 +1,4 @@
+#include <vector>
 #include <SFML/Graphics.hpp>
 
 const int typesAmount = 7, WIDTH=1920, HEIGHT=1080;
@@ -54,6 +55,7 @@ class Object{
         shape.setPosition(pos);
         shape.setFillColor(colors[int(type)]);
     }
+    ~Object(){}
 };
 
 struct Input{
