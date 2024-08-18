@@ -1,5 +1,4 @@
 #include <SFML/Graphics.hpp>
-#include <array>
 
 const int typesAmount = 7, WIDTH=1920, HEIGHT=1080;
 inline int roundToSnap(float num);
