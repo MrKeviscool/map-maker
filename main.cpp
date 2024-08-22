@@ -15,8 +15,6 @@ const int MAXFPS = 60, SNAPSIZE = 30;
 vector<Object> objects;
 vector<Object> undoBuffer;
 
-Input input;
-
 bool playerPLaced = false, endPlaced = false;
 bool displaySavedText = false;
 
@@ -25,7 +23,7 @@ inline int roundToSnap(float num){
 }
 
 inline objType curObjType(){
-    return bindings[input.numDown][input.timesPressed-1];
+    return bindings[Input::numDown][Input::timesPressed-1];
 }
 
 void undo(){
@@ -44,9 +42,9 @@ void reset(){
     undoBuffer.clear();
     playerPLaced = false;
     endPlaced = false;
-    input.numDown = 0;
-    input.timesPressed = 1;
-    input.screenPos = sf::Vector2i(0, 0);
+    Input::numDown = 0;
+    Input::timesPressed = 1;
+    Input::screenPos = sf::Vector2i(0, 0);
     for(int i = 0; i < typesAmount; i++) //could use std::copy however this is fine
         sizes[i] = defaultSizes[i];
 }
@@ -77,16 +75,16 @@ void writeToFile(){
 void moveObjects(){
     const int MOVESPEED = 20;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-        input.screenPos.x -= MOVESPEED;
+        Input::screenPos.x -= MOVESPEED;
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-        input.screenPos.x += MOVESPEED;
+        Input::screenPos.x += MOVESPEED;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-        input.screenPos.y -= MOVESPEED;
+        Input::screenPos.y -= MOVESPEED;
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-        input.screenPos.y += MOVESPEED;
+        Input::screenPos.y += MOVESPEED;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
         for(auto &obj : objects)
-            obj.shape.setPosition(obj.actualPos - sf::Vector2f(roundToSnap(input.screenPos.x), roundToSnap(input.screenPos.y)));
+            obj.shape.setPosition(obj.actualPos - sf::Vector2f(roundToSnap(Input::screenPos.x), roundToSnap(Input::screenPos.y)));
 }
 
 void resizeObjects(){
@@ -152,17 +150,17 @@ void manageEvents(sf::Event &event, sf::RenderWindow &window){
             if(num < 0 || num > 3) //if its not in range, move on
                 continue;
                 
-            if(num != input.numDown) //if its diffrent to what was currently pressed...
-                input.timesPressed=0; //then set the amount of times it was previously pressed to 0
-            input.timesPressed++; //add one because you clicked it once
-            input.numDown = num; //set the number you clicked to the num you clicked
-            if(bindings[input.numDown].size() < input.timesPressed)
-                input.timesPressed = 1;
+            if(num != Input::numDown) //if its diffrent to what was currently pressed...
+                Input::timesPressed=0; //then set the amount of times it was previously pressed to 0
+            Input::timesPressed++; //add one because you clicked it once
+            Input::numDown = num; //set the number you clicked to the num you clicked
+            if(bindings[Input::numDown].size() < Input::timesPressed)
+                Input::timesPressed = 1;
             continue;
         }
         if(event.type == sf::Event::MouseButtonReleased){
             if(event.mouseButton.button == sf::Mouse::Left){
-                input.mouseReleased = true;
+                Input::mouseReleased = true;
                 continue;
             }
             else if(event.mouseButton.button == sf::Mouse::Right){
@@ -181,13 +179,13 @@ Object getCursorObj(const sf::RenderWindow &window){
 void placeObj(const sf::RenderWindow &window){
     Object cursorObj = getCursorObj(window);
     if(cursorObj.type == objType::player && playerPLaced|| cursorObj.type == objType::end && endPlaced){
-        input.mouseReleased = false;
+        Input::mouseReleased = false;
         return;
     }
-    cursorObj.actualPos.x = roundToSnap(cursorObj.shape.getPosition().x +  (float)input.screenPos.x);
-    cursorObj.actualPos.y = roundToSnap(cursorObj.shape.getPosition().y +  (float)input.screenPos.y);
+    cursorObj.actualPos.x = roundToSnap(cursorObj.shape.getPosition().x +  (float)Input::screenPos.x);
+    cursorObj.actualPos.y = roundToSnap(cursorObj.shape.getPosition().y +  (float)Input::screenPos.y);
     objects.push_back(cursorObj);
-    input.mouseReleased = false;
+    Input::mouseReleased = false;
     if(cursorObj.type == objType::player)
         playerPLaced = true;
     else if(cursorObj.type == objType::end)
@@ -239,13 +237,13 @@ void display(sf::RenderWindow &window){
 int main(){
     for(int i = 0; i < typesAmount; i++)
         sizes[i] = defaultSizes[i];
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker");
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "map maker", sf::Style::Fullscreen);
     sf::Event event;
     while(window.isOpen()){
         manageEvents(event, window);
         display(window);
         lockFrames();
-        if(input.mouseReleased)
+        if(Input::mouseReleased)
             placeObj(window);
     }
 

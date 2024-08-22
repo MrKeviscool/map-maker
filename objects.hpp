@@ -58,12 +58,19 @@ class Object{
     ~Object(){}
 };
 
-struct Input{
+// struct Input{
+//     int numDown = 0;
+//     int timesPressed = 1;
+//     bool mouseReleased = false;
+//     sf::Vector2i screenPos = sf::Vector2i(0, 0);
+// };
+
+namespace Input{
     int numDown = 0;
     int timesPressed = 1;
     bool mouseReleased = false;
     sf::Vector2i screenPos = sf::Vector2i(0, 0);
-};
+}
 
 struct Text{
     sf::Font font;
