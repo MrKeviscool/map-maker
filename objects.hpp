@@ -14,6 +14,16 @@ enum class objType{
     chaseShootEnemy
 };
 
+const sf::Color colors[] = {
+    sf::Color(255, 255, 255),   //sf::Color::White,   floor
+    sf::Color(0, 0, 255),       //sf::Color::Blue,    player
+    sf::Color(255, 0, 0),       //sf::Color::Red,     chaseEnemy
+    sf::Color(0, 255, 0),       //sf::Color::Green,   end
+    sf::Color(255, 0, 255),     //sf::Color::Magenta, spikes
+    sf::Color(255, 100, 0),     //orange              shootEnemy
+    sf::Color(255, 255, 0),     //sf::Color::Yellow   shootChaseEnemy
+};
+
 const sf::Vector2f defaultSizes[] = {
     sf::Vector2f(300, 30), //floor
     sf::Vector2f(60, 90), //player
@@ -22,17 +32,6 @@ const sf::Vector2f defaultSizes[] = {
     sf::Vector2f(150, 30), //spikes
     sf::Vector2f(60, 90), //shootEnemy
     sf::Vector2f(60, 90), //chaseShootEnemy
-};
-
-
-const sf::Color colors[] = {
-    sf::Color::White, //floor
-    sf::Color::Blue, //player
-    sf::Color::Red, //chaseEnemy
-    sf::Color::Green, //end
-    sf::Color::Magenta, //spikes
-    sf::Color(255, 100, 0), //shootEnemy
-    sf::Color::Yellow, //shootChaseEnemy
 };
 
 const std::vector<std::vector<objType>> bindings = {
@@ -49,7 +48,6 @@ class Object{
     sf::RectangleShape shape;
     const objType type;
     sf::Vector2f actualPos;
-    Object();
     Object(sf::Vector2f pos, objType type) : type(type){
         shape = sf::RectangleShape(sf::Vector2f(roundToSnap(sizes[int(type)].x), roundToSnap(sizes[int(type)].y)));
         shape.setPosition(pos);
@@ -57,13 +55,6 @@ class Object{
     }
     ~Object(){}
 };
-
-// struct Input{
-//     int numDown = 0;
-//     int timesPressed = 1;
-//     bool mouseReleased = false;
-//     sf::Vector2i screenPos = sf::Vector2i(0, 0);
-// };
 
 namespace Input{
     int numDown = 0;
